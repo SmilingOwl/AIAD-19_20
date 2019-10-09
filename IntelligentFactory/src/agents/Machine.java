@@ -13,10 +13,9 @@ public class Machine extends Agent {
 	long averageTime;
 	ArrayList<Long> availability; //contains the initial time to perform each task that is already allocated
 	ArrayList<Proposal> proposals;
+	private DFAgentDescription dfd;
 	
 	//constructor to initialize machine
-
-	private DFAgentDescription dfd;
 	
 	public Machine(int id, String role, long averageTime) {
 		this.id = id;
@@ -25,10 +24,10 @@ public class Machine extends Agent {
 	}
 	
 	
-	
 	//class that starts when the agent is created
 	public void setup() {
 		System.out.println("I'm machine " + this.id);
+		this.register();
 	}
 	
 	// register on yellow pages
