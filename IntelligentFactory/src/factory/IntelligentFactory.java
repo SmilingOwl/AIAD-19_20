@@ -50,10 +50,13 @@ public class IntelligentFactory {
 	}
 	
 	public void createMachines() {
+		// random role + random average time + generate id
+		
 		
 	}
 	
 	public void createOrders() {
+		// random tasks + random number of tasks + generate id
 		
 	}
 }

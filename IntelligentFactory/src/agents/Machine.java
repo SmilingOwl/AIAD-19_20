@@ -14,7 +14,7 @@ public class Machine extends Agent {
 	ArrayList<Long> availability; //contains the initial time to perform each task that is already allocated
 	ArrayList<Proposal> proposals;
 	
-	//constructor to initialize machine
+	//constructor to initialise machine
 
 	private DFAgentDescription dfd;
 	
