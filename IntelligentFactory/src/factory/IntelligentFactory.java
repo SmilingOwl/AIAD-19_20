@@ -1,6 +1,10 @@
 package factory;
 
+import agents.Order;
+
 import java.util.ArrayList;
+import java.util.Random;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -13,6 +17,7 @@ import jade.wrapper.ContainerController;
 public class IntelligentFactory {
 
 	private ArrayList<String> tasks = new ArrayList<String>();
+	private ArrayList<Order> orders = new ArrayList<Order>();
 	private int numberMachines;
 	private int numberOrders;
 	private int minNumberTasksPerOrder;
@@ -35,6 +40,8 @@ public class IntelligentFactory {
 		this.tasks.add("sawing");
 		this.tasks.add("sewing");
 		this.tasks.add("mixing");
+		this.tasks.add("polishing");
+		this.tasks.add("hammering");
 		
 		this.rt = Runtime.instance();
 		this.p = new ProfileImpl(true);
@@ -56,7 +63,19 @@ public class IntelligentFactory {
 	}
 	
 	public void createOrders() {
-		// random tasks + random number of tasks + generate id
+		for(int i = 0; i < this.numberOrders; i++) {
+			Random rand = new Random();
+			int numberTasks = rand.nextInt(this.maxNumberTasksPerOrder - this.minNumberTasksPerOrder + 1) + this.minNumberTasksPerOrder;
+			ArrayList<String> order_tasks = new ArrayList<String>();
+			for(int j = 0; j < numberTasks; j++) {
+				rand = new Random();
+				int new_task = rand.nextInt(this.tasks.size() - 1); //tasks can be repeated
+				order_tasks.add(this.tasks.get(new_task));
+			}
+			Order new_order = new Order(i+1, order_tasks);
+			orders.add(new_order);
+		}
+		
 		
 	}
 }
