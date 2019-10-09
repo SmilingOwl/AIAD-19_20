@@ -3,6 +3,9 @@ import utils.Proposal;
 
 import jade.core.Agent;
 import java.util.ArrayList;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.*;
 
 public class Machine extends Agent {
 	int id;
@@ -12,6 +15,9 @@ public class Machine extends Agent {
 	ArrayList<Proposal> proposals;
 	
 	//constructor to initialize machine
+
+	private DFAgentDescription dfd;
+	
 	public Machine(int id, String role, long averageTime) {
 		this.id = id;
 		this.role = role;
@@ -24,4 +30,23 @@ public class Machine extends Agent {
 	public void setup() {
 		System.out.println("I'm machine " + this.id);
 	}
+	
+	// register on yellow pages
+	public void register() {
+		ServiceDescription sd = new ServiceDescription();
+		//sd.setType();
+		sd.setName(getLocalName());
+
+		this.dfd = new DFAgentDescription();
+		
+		dfd.setName(getAID());
+		dfd.addServices(sd);
+		
+		try {
+			DFService.register(this, this.dfd);
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+	}
 }
+

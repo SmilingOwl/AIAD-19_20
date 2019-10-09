@@ -1,11 +1,15 @@
 package agents;
 
+import java.util.ArrayList;
 import jade.core.Agent;
+
 
 public class Order extends Agent {
 	
-	//constructor to initialize order
+	//constructor to initialise order
 	public Order() {
+		int credits;
+		ArrayList<String> tasks;
 		
 	}
 	
