@@ -8,9 +8,9 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.*;
 
 public class Machine extends Agent {
-	String id;
+	int id;
 	String role;
-	long average_time;
+	long averageTime;
 	ArrayList<Long> availability; //contains the initial time to perform each task that is already allocated
 	ArrayList<Proposal> proposals;
 	
@@ -18,16 +18,17 @@ public class Machine extends Agent {
 
 	private DFAgentDescription dfd;
 	
-	//constructor to initialise machine
-	public Machine() {
-		
-		
+	public Machine(int id, String role, long averageTime) {
+		this.id = id;
+		this.role = role;
+		this.averageTime = averageTime;
 	}
+	
+	
 	
 	//class that starts when the agent is created
 	public void setup() {
-		
-		register();
+		System.out.println("I'm machine " + this.id);
 	}
 	
 	// register on yellow pages

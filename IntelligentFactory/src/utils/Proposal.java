@@ -5,57 +5,58 @@ public class Proposal {
 		ACCEPTED, REFUSED, PENDING, CONSTRUCTION
 	}
 	
-	State current_state;
-	String []machines;
-	long time_needed;
-	int nr_tasks_without_machine;
+	State currentState;
+	int []machines;
+	long timeNeeded;
+	int nrTasksWithoutMachine;
+	int id;
 	
-	public Proposal(String owner_id, int nr_tasks, int owner_task) {
-		this.current_state = State.CONSTRUCTION;
-		this.machines = new String[nr_tasks];
-		this.machines[owner_task] = owner_id;
-		this.nr_tasks_without_machine = nr_tasks;
+	public Proposal(int ownerId, int nrTasks, int ownerTask) {
+		this.currentState = State.CONSTRUCTION;
+		this.machines = new int[nrTasks];
+		this.machines[ownerTask] = ownerId;
+		this.nrTasksWithoutMachine = nrTasks;
 	}
 	
-	public State get_current_state() {
-		return this.current_state;
+	public State getCurrentState() {
+		return this.currentState;
 	}
 	
-	public String[] get_machines() {
+	public int[] getMachines() {
 		return this.machines;
 	}
 		
-	public long get_time_needed() {
-		return this.time_needed;
+	public long getTimeNeeded() {
+		return this.timeNeeded;
 	}
 	
-	public int get_nr_tasks_without_machine() {
-		return this.nr_tasks_without_machine;
+	public int getNrTasksWithoutMachine() {
+		return this.nrTasksWithoutMachine;
 	}
 	
-	public void accept_proposal() {
-		this.current_state = State.ACCEPTED;		
+	public void acceptProposal() {
+		this.currentState = State.ACCEPTED;		
 	}
 	
-	public void refuse_proposal() {
-		this.current_state = State.REFUSED;		
+	public void refuseProposal() {
+		this.currentState = State.REFUSED;		
 	}
 	
-	public void set_as_pending() {
-		this.current_state = State.PENDING;
+	public void setAsPending() {
+		this.currentState = State.PENDING;
 	}
 	
-	public void add_machine(String id_machine, int task) {
-		this.machines[task] = id_machine;
-		this.nr_tasks_without_machine--;
+	public void addMachine(int idMachine, int task) {
+		this.machines[task] = idMachine;
+		this.nrTasksWithoutMachine--;
 	}
 		
-	public void set_time_needed(long time_needed) {
-		this.time_needed = time_needed;
+	public void setTimeNeeded(long timeNeeded) {
+		this.timeNeeded = timeNeeded;
 	}
 	
-	public boolean is_ready() {
-		if(nr_tasks_without_machine == 0)
+	public boolean isReady() {
+		if(nrTasksWithoutMachine == 0)
 			return true;
 		return false;
 	}
