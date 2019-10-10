@@ -1,6 +1,8 @@
 package factory;
 
 import agents.Order;
+import agents.Machine;
+import agents.Order;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -9,9 +11,8 @@ import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
 import jade.wrapper.ContainerController;
-
-import agents.Machine;
-import agents.Order;
+import jade.wrapper.StaleProxyException;
+import jade.wrapper.AgentController;
 
 /*
  * In this class we can define which tasks exist in the factory and initialize the agents.
@@ -28,21 +29,21 @@ public class IntelligentFactory {
 	private int maxNumberTasksPerOrder;
 	private int minTimePerTask;
 	private int maxTimePerTask;
-	private Runtime rt;
-	private Profile p;
-	private ContainerController cc;
-	
-	
-	//constructor
-	public IntelligentFactory(int numberMachines, int numberOrders, int minNumberTasksPerOrder, int maxNumberTasksPerOrder, int minTimePerTask, int maxTimePertask) {
-		
+	private Runtime runTime;
+	private Profile profile;
+	private ContainerController containerController;
+
+	// constructor
+	public IntelligentFactory(int numberMachines, int numberOrders, int minNumberTasksPerOrder,
+			int maxNumberTasksPerOrder, int minTimePerTask, int maxTimePerTask) {
+
 		this.numberMachines = numberMachines;
 		this.numberOrders = numberOrders;
 		this.maxNumberTasksPerOrder = maxNumberTasksPerOrder;
 		this.minNumberTasksPerOrder = minNumberTasksPerOrder;
 		this.minTimePerTask = minTimePerTask;
 		this.maxTimePerTask = maxTimePerTask;
-		
+
 		this.tasks.add("snipping");
 		this.tasks.add("screwing");
 		this.tasks.add("sawing");
@@ -50,53 +51,76 @@ public class IntelligentFactory {
 		this.tasks.add("mixing");
 		this.tasks.add("polishing");
 		this.tasks.add("hammering");
-		
-		this.rt = Runtime.instance();
-		this.p = new ProfileImpl(true);
-		this.cc = rt.createMainContainer(p);
-		
+
+		this.runTime = Runtime.instance();
+		this.profile = new ProfileImpl(true);
+		this.containerController = runTime.createMainContainer(profile);
+
 		try {
 			createMachines();
 			createOrders();
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void createMachines() {
 		int averageTime;
 		int indexRole;
-		
-		for (int id=1; id<numberMachines; id++ ) {
-			
+
+		for (int id = 1; id <= numberMachines; id++) {
+
 			Random rd = new Random();
 			averageTime = rd.nextInt((maxTimePerTask - minTimePerTask) + 1) + minTimePerTask;
-			
+
 			Random rd2 = new Random();
-			indexRole = rd2.nextInt( (tasks.size()-1) + 1);
-			
-			Machine machine = new Machine(id,tasks.get(indexRole),averageTime);
+			indexRole = rd2.nextInt((tasks.size() - 1) + 1);
+
+			Machine machine = new Machine("machine" + id, tasks.get(indexRole), averageTime);
 			machines.add(machine);
+			try {
+				AgentController agentControl = this.containerController.acceptNewAgent("machine" + id, machine);
+				agentControl.start();
+			} catch (StaleProxyException ex) {
+				ex.printStackTrace();
+			}
 		}
 
-		
 	}
-	
+
 	public void createOrders() {
-		for(int i = 0; i < this.numberOrders; i++) {
+		for (int i = 0; i < this.numberOrders; i++) {
 			Random rand = new Random();
-			int numberTasks = rand.nextInt(this.maxNumberTasksPerOrder - this.minNumberTasksPerOrder + 1) + this.minNumberTasksPerOrder;
+			int numberTasks = rand.nextInt(this.maxNumberTasksPerOrder - this.minNumberTasksPerOrder + 1)
+					+ this.minNumberTasksPerOrder;
+			if(numberTasks > this.tasks.size())
+				numberTasks = this.tasks.size();
 			ArrayList<String> order_tasks = new ArrayList<String>();
-			for(int j = 0; j < numberTasks; j++) {
+			for (int j = 0; j < numberTasks; j++) {
 				rand = new Random();
-				int new_task = rand.nextInt(this.tasks.size() - 1); //tasks can be repeated
-				order_tasks.add(this.tasks.get(new_task));
+				int new_task = rand.nextInt(this.tasks.size() - 1); // tasks can't be repeated
+				if(!order_tasks.contains(this.tasks.get(new_task)))
+					order_tasks.add(this.tasks.get(new_task));
 			}
-			Order new_order = new Order(i+1, order_tasks);
+			Order new_order = new Order("order" + (i + 1), order_tasks);
 			orders.add(new_order);
+			try {
+				AgentController agentControl = this.containerController.acceptNewAgent("order" + (i + 1), new_order);
+				agentControl.start();
+			} catch (StaleProxyException e) {
+				e.printStackTrace();
+			}
 		}
-		
-		
+	}
+
+	/*
+	 * to run, add arguments in the run configuration for this class; we can later
+	 * make a menu that asks each of this arguments to make this easier on the user
+	 */
+	public static void main(String args[]) {
+		IntelligentFactory factory = new IntelligentFactory(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+				Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]),
+				Integer.parseInt(args[5]));
 	}
 }
