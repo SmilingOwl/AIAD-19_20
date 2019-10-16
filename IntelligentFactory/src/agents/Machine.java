@@ -16,7 +16,7 @@ public class Machine extends Agent {
 	ArrayList<Proposal> proposals;
 	private DFAgentDescription dfd;
 	
-	//constructor to initialize machine
+	//constructor to initialise machine
 	
 	public Machine(String id, String role, long averageTime) {
 		this.id = id;

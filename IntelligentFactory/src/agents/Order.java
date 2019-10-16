@@ -12,8 +12,8 @@ public class Order extends Agent {
 	String id;
 	// int credits; //TODO: add later
 	ArrayList<String> tasks;
-
-	// constructor to initialize order
+	
+	//constructor to initialise order
 	public Order(String id, ArrayList<String> tasks) {
 		this.id = id;
 		this.tasks = tasks;

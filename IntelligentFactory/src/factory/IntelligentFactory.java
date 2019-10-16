@@ -78,7 +78,7 @@ public class IntelligentFactory {
 			Random rd2 = new Random();
 			indexRole = rd2.nextInt((tasks.size() - 1) + 1);
 
-			Machine machine = new Machine("m" + id, tasks.get(indexRole), averageTime);
+			Machine machine = new Machine("M" + id, tasks.get(indexRole), averageTime);
 			machines.add(machine);
 			try {
 				AgentController agentControl = this.containerController.acceptNewAgent("m" + id, machine);
@@ -93,18 +93,21 @@ public class IntelligentFactory {
 	public void createOrders() {
 		for (int i = 0; i < this.numberOrders; i++) {
 			Random rand = new Random();
+			ArrayList<String> order_tasks = new ArrayList<String>();
 			int numberTasks = rand.nextInt(this.maxNumberTasksPerOrder - this.minNumberTasksPerOrder + 1)
 					+ this.minNumberTasksPerOrder;
+			
 			if(numberTasks > this.tasks.size())
 				numberTasks = this.tasks.size();
-			ArrayList<String> order_tasks = new ArrayList<String>();
+			
 			for (int j = 0; j < numberTasks; j++) {
 				rand = new Random();
 				int new_task = rand.nextInt(this.tasks.size() - 1); // tasks can't be repeated
+				
 				if(!order_tasks.contains(this.tasks.get(new_task)))
 					order_tasks.add(this.tasks.get(new_task));
 			}
-			Order new_order = new Order("o" + (i + 1), order_tasks);
+			Order new_order = new Order("O" + (i + 1), order_tasks);
 			orders.add(new_order);
 			try {
 				AgentController agentControl = this.containerController.acceptNewAgent("o" + (i + 1), new_order);
