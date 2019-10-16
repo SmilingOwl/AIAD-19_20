@@ -13,7 +13,6 @@ public class Machine extends Agent {
 	String role;
 	long averageTime;
 	ArrayList<Long> availability; //contains the initial time to perform each task that is already allocated
-	ArrayList<Proposal> proposals;
 	private DFAgentDescription dfd;
 	
 	//constructor to initialise machine
