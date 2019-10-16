@@ -58,6 +58,7 @@ public class IntelligentFactory {
 
 		try {
 			createMachines();
+			Thread.sleep(500);
 			createOrders();
 
 		} catch (Exception e) {
@@ -77,10 +78,10 @@ public class IntelligentFactory {
 			Random rd2 = new Random();
 			indexRole = rd2.nextInt((tasks.size() - 1) + 1);
 
-			Machine machine = new Machine("machine" + id, tasks.get(indexRole), averageTime);
+			Machine machine = new Machine("m" + id, tasks.get(indexRole), averageTime);
 			machines.add(machine);
 			try {
-				AgentController agentControl = this.containerController.acceptNewAgent("machine" + id, machine);
+				AgentController agentControl = this.containerController.acceptNewAgent("m" + id, machine);
 				agentControl.start();
 			} catch (StaleProxyException ex) {
 				ex.printStackTrace();
@@ -103,10 +104,10 @@ public class IntelligentFactory {
 				if(!order_tasks.contains(this.tasks.get(new_task)))
 					order_tasks.add(this.tasks.get(new_task));
 			}
-			Order new_order = new Order("order" + (i + 1), order_tasks);
+			Order new_order = new Order("o" + (i + 1), order_tasks);
 			orders.add(new_order);
 			try {
-				AgentController agentControl = this.containerController.acceptNewAgent("order" + (i + 1), new_order);
+				AgentController agentControl = this.containerController.acceptNewAgent("o" + (i + 1), new_order);
 				agentControl.start();
 			} catch (StaleProxyException e) {
 				e.printStackTrace();
