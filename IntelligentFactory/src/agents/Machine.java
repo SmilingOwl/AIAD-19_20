@@ -39,7 +39,6 @@ public class Machine extends Agent {
 	//class that starts when the agent is created
 	public void setup() {
 		System.out.println("I'm machine " + this.id + ". My role is " + this.role + " and my average time is " + this.averageTime + ".");
-		//this.addBehaviour(new ReceiveOrderArrivalMessage(this));
 		this.addBehaviour(new MachineResponderToOrder(this, MessageTemplate.MatchPerformative(ACLMessage.CFP)));
 		this.register();
 	}

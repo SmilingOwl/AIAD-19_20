@@ -48,4 +48,8 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		vector.add(msg);		
 		return vector;				
 	}
+	
+	protected void handleAllResponses(Vector responses, Vector acceptances) {
+		System.out.println(" > " + this.parent.getId() + " got " + responses.size() + " responses.");
+	}
 }

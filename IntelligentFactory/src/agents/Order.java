@@ -36,35 +36,7 @@ public class Order extends Agent {
 			System.out.print(this.tasks.get(i - 1) + "; ");
 		System.out.println();
 
-		//this.send_arrived_message();
-		//this.addBehaviour(new ReceiveMachineMessage(this));
 		this.addBehaviour(new OrderSendsArrivalMessage(this, new ACLMessage(ACLMessage.CFP)));
-	}
-
-	public void send_arrived_message() {
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		String content = "ARRIVED " + this.id + " ";
-		for (int i = 0; i < this.tasks.size(); i++) {
-			content += this.tasks.get(i) + " ";
-		}
-		msg.setContent(content);
-		for (int i = 0; i < this.tasks.size(); i++) {
-			DFAgentDescription template = new DFAgentDescription();
-			ServiceDescription sd = new ServiceDescription();
-			sd.setType(this.tasks.get(i));
-			template.addServices(sd);
-
-			try {
-				DFAgentDescription[] result = DFService.search(this, template);
-				for (int j = 0; j < result.length; j++) {
-					msg.addReceiver(result[j].getName());
-				}
-
-			} catch (FIPAException fe) {
-				fe.printStackTrace();
-			}
-		}
-		this.send(msg);
 	}
 
 }
