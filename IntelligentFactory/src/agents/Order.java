@@ -1,5 +1,7 @@
 package agents;
 
+import behaviours.*;
+
 import java.util.ArrayList;
 
 import jade.core.Agent;
@@ -18,6 +20,14 @@ public class Order extends Agent {
 		this.id = id;
 		this.tasks = tasks;
 	}
+	
+	public String getId() {
+		return this.id;
+	}
+	
+	public ArrayList<String> getTasks() {
+		return this.tasks;
+	}
 
 	// class that is called when the agent starts
 	public void setup() {
@@ -26,7 +36,9 @@ public class Order extends Agent {
 			System.out.print(this.tasks.get(i - 1) + "; ");
 		System.out.println();
 
-		this.send_arrived_message();
+		//this.send_arrived_message();
+		//this.addBehaviour(new ReceiveMachineMessage(this));
+		this.addBehaviour(new OrderSendsArrivalMessage(this, new ACLMessage(ACLMessage.CFP)));
 	}
 
 	public void send_arrived_message() {
@@ -46,13 +58,13 @@ public class Order extends Agent {
 				DFAgentDescription[] result = DFService.search(this, template);
 				for (int j = 0; j < result.length; j++) {
 					msg.addReceiver(result[j].getName());
-					this.send(msg);
 				}
 
 			} catch (FIPAException fe) {
 				fe.printStackTrace();
 			}
 		}
+		this.send(msg);
 	}
 
 }
