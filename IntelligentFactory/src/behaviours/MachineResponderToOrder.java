@@ -20,9 +20,11 @@ public class MachineResponderToOrder extends ContractNetResponder{
 		System.out.println(" > " + this.parent.getId() + ": " + msg.getContent());
 		ACLMessage reply = msg.createReply();
 		reply.setPerformative(ACLMessage.PROPOSE);
+		
 		reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " "
 				+ this.parent.getExpectedFinishTime());
 		this.parent.send(reply);
 		return reply;
 	}
+	
 }
