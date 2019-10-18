@@ -95,4 +95,8 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		}
 		
 	}
+	
+	protected void handleAllResultNotifications(Vector resultNotifications) {
+		// save in the order the finish time of each task
+	}
 }

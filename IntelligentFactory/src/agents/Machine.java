@@ -75,5 +75,12 @@ public class Machine extends Agent {
 	public void doOrders() {
 		
 	}
+	public void deleteFromPending(String id) {
+		this.ordersPending.remove(id);
+	}
+	
+	public void addOrdersTaken(String id) {
+		this.ordersTaken.add(id);
+	}
 }
 
