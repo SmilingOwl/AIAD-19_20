@@ -18,12 +18,13 @@ public class Order extends Agent {
 
 	ArrayList<String> tasks;
 	long finishTime;
-
+	boolean finished;
 	
 	//constructor to initialise order
 	public Order(String id, ArrayList<String> tasks) {
 		this.id = id;
 		this.tasks = tasks;
+		this.finished = false;
 	}
 	
 	public String getId() {
@@ -36,6 +37,10 @@ public class Order extends Agent {
 	
 	public void SetFinishTime(long finishTime) {
 		this.finishTime = finishTime;
+	}
+	
+	public void SetFinished(boolean finished) {
+		this.finished = finished;
 	}
 
 	// class that is called when the agent starts

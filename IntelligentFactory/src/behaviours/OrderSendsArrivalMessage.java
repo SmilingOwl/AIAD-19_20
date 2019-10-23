@@ -118,5 +118,6 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		// obtain max value
 		long maxValueInHashMap = (Collections.max(idFinishTime.values()));
 		parent.SetFinishTime(maxValueInHashMap);
+		parent.SetFinished(true);
 	}
 }
