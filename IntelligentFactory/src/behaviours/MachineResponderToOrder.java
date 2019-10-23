@@ -34,6 +34,7 @@ public class MachineResponderToOrder extends ContractNetResponder{
 	}
 	
 	protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
+		System.out.println("> " + this.parent.getId() + " - " + accept.getContent());
 		String[] msgContent = accept.getContent().split(" ");
 		parent.deleteFromPending(msgContent[1]);
 		parent.addOrdersTaken(msgContent[1]);

@@ -56,7 +56,6 @@ public class Order extends Agent {
 				min = FinishTime;
 				id = MachineId.get(i);
 			}
-			System.out.println(FinishTime);
 		}
 	return id;
 	}

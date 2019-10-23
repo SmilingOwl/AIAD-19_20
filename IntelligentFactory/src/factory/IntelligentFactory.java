@@ -45,8 +45,8 @@ public class IntelligentFactory {
 
 		this.tasks.add("snipping");
 		this.tasks.add("screwing");
-		this.tasks.add("sawing");
-		this.tasks.add("sewing");
+		//this.tasks.add("sawing");
+		//this.tasks.add("sewing");
 		//this.tasks.add("mixing");
 		//this.tasks.add("polishing");
 		//this.tasks.add("hammering");
