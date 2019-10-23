@@ -15,9 +15,10 @@ import jade.lang.acl.ACLMessage;
 public class Order extends Agent {
 	String id;
 	// int credits; //TODO: add later
-    ArrayList<String> tasks;
-    HashMap <String, ArrayList<String>> ids1 = null;
- 	HashMap <String, Long> times1 = null;
+
+	ArrayList<String> tasks;
+	long finishTime;
+
 	
 	//constructor to initialise order
 	public Order(String id, ArrayList<String> tasks) {
@@ -31,6 +32,10 @@ public class Order extends Agent {
 
 	public ArrayList<String> getTasks() {
 		return this.tasks;
+	}
+	
+	public void SetFinishTime(long finishTime) {
+		this.finishTime = finishTime;
 	}
 
 	// class that is called when the agent starts

@@ -41,8 +41,8 @@ public class MachineResponderToOrder extends ContractNetResponder{
 		ACLMessage reply = accept.createReply();
 		reply.setPerformative(ACLMessage.INFORM);
 		
-		// TODO orders function
-		reply.setContent("DONE "+ this.parent.getId() + " " + 5);
+		reply.setContent("DONE "+ this.parent.getId() + " " + this.parent.doOrder(msgContent[1]));
+		System.out.println(" > " + reply.getContent());
 		this.parent.send(reply);
 		return reply;
 	}

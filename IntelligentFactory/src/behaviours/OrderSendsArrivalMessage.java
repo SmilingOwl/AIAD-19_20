@@ -4,6 +4,7 @@ import agents.Order;
 
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 
@@ -54,6 +55,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	}
 	
 	protected void handleAllResponses(Vector responses, Vector acceptances) {
+		System.out.println(">> " + this.parent.getId() + " received " + responses.size() + " responses: ");
 
 		// tasks, ArrayList<ids>
 		HashMap<String, ArrayList<String>> tasksMachineIds = new HashMap<String,ArrayList<String>>();
@@ -70,6 +72,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		for (int i = 0; i < responses.size(); i++) {
 			ACLMessage msg = (ACLMessage) responses.elementAt(i);
 			String[] msgContent = msg.getContent().split(" ");
+			System.out.println(" > " + msg.getContent());
 			
 			tasksMachineIds.get(msgContent[2]).add(msgContent[1]);
 			idFinishTime.put(msgContent[1], Long.parseLong(msgContent[3]));
@@ -95,12 +98,13 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			
 			
 			//if(msgContent[1] == returned id ){
-			//reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-			//reply.setContent("ACCEPT " + this.parent.getId());}
+			reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+			reply.setContent("ACCEPT " + this.parent.getId());
+			//}
 			
 			//else{
-			reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-			reply.setContent("REJECT " + this.parent.getId());
+			//reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+			//reply.setContent("REJECT " + this.parent.getId());
 			//}
 			
 			acceptances.add(reply);{
@@ -118,8 +122,22 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		
 	
 	
+	// id finish time
 	protected void handleAllResultNotifications(Vector resultNotifications) {
-		// save in the order the finish time of each task
-		}
+		
 	
+
+		HashMap <String, Long> idFinishTime = new HashMap <String,Long>();
+		
+		for (int i = 0; i < resultNotifications.size(); i++) {
+			ACLMessage msg = (ACLMessage) resultNotifications.elementAt(i);
+			String[] msgContent = msg.getContent().split(" ");
+			idFinishTime.put(msgContent[1], Long.parseLong(msgContent[2]));
+		}
+		
+		// obtain max value
+		long maxValueInHashMap=(Collections.max(idFinishTime.values()));
+		parent.SetFinishTime(maxValueInHashMap);
+	}
 }
+

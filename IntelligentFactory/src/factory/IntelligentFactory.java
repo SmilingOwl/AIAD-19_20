@@ -47,9 +47,9 @@ public class IntelligentFactory {
 		this.tasks.add("screwing");
 		this.tasks.add("sawing");
 		this.tasks.add("sewing");
-		this.tasks.add("mixing");
-		this.tasks.add("polishing");
-		this.tasks.add("hammering");
+		//this.tasks.add("mixing");
+		//this.tasks.add("polishing");
+		//this.tasks.add("hammering");
 
 		this.runTime = Runtime.instance();
 		this.profile = new ProfileImpl(true);
