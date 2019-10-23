@@ -16,6 +16,8 @@ import jade.proto.ContractNetInitiator;
 
 public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	Order parent;
+	//private static HashMap <String, ArrayList<String>> Results = null;
+	//private static HashMap <String, Long> Results2 = null;
 
 	public OrderSendsArrivalMessage(Order parent, ACLMessage cfp) {
 		super(parent, cfp);
@@ -53,7 +55,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	
 	protected void handleAllResponses(Vector responses, Vector acceptances) {
 
-		// taks, ArrayList<ids>
+		// tasks, ArrayList<ids>
 		HashMap<String, ArrayList<String>> tasksMachineIds = new HashMap<String,ArrayList<String>>();
 		
 		// id -> finish time
@@ -71,10 +73,20 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			
 			tasksMachineIds.get(msgContent[2]).add(msgContent[1]);
 			idFinishTime.put(msgContent[1], Long.parseLong(msgContent[3]));
+			
 		}
 		
 		// return the machine id with the min finish time
 		// send ACCEPT for that machine id and REJECT for the others
+	
+		for (int n=0 ; n < this.parent.getTasks().size(); n++) {
+			ArrayList<String> MachinesIds = tasksMachineIds.get(this.parent.getTasks().get(n));
+			if (MachinesIds.size()==0) {
+				return;
+			}
+			this.parent.ComparingTimes(MachinesIds,idFinishTime);
+		}
+		
 		
 		for (int i =0; i< responses.size(); i++) {
 			ACLMessage msg = (ACLMessage) responses.elementAt(i);
@@ -91,12 +103,23 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			reply.setContent("REJECT " + this.parent.getId());
 			//}
 			
-			acceptances.add(reply);
-		}
+			acceptances.add(reply);{
+				}
+			
+			}
+			
+			
+		      }
+			
+
+			//this.setResults(tasksMachineIds); 
+			//this.setResults2(idFinishTime);
+			
 		
-	}
+	
 	
 	protected void handleAllResultNotifications(Vector resultNotifications) {
 		// save in the order the finish time of each task
-	}
+		}
+	
 }

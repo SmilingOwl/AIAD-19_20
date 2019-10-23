@@ -2,7 +2,6 @@ package factory;
 
 import agents.Order;
 import agents.Machine;
-import agents.Order;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -80,11 +79,13 @@ public class IntelligentFactory {
 
 			Machine machine = new Machine("M" + id, tasks.get(indexRole), averageTime);
 			machines.add(machine);
+		
 			try {
 				AgentController agentControl = this.containerController.acceptNewAgent("m" + id, machine);
 				agentControl.start();
 			} catch (StaleProxyException ex) {
 				ex.printStackTrace();
+				
 			}
 		}
 
@@ -106,6 +107,7 @@ public class IntelligentFactory {
 				
 				if(!order_tasks.contains(this.tasks.get(new_task)))
 					order_tasks.add(this.tasks.get(new_task));
+				
 			}
 			Order new_order = new Order("O" + (i + 1), order_tasks);
 			orders.add(new_order);

@@ -1,8 +1,10 @@
 package agents;
 
 import behaviours.*;
-
+import java.awt.Frame;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
 import jade.core.Agent;
 import jade.domain.DFService;
@@ -13,7 +15,9 @@ import jade.lang.acl.ACLMessage;
 public class Order extends Agent {
 	String id;
 	// int credits; //TODO: add later
-	ArrayList<String> tasks;
+    ArrayList<String> tasks;
+    HashMap <String, ArrayList<String>> ids1 = null;
+ 	HashMap <String, Long> times1 = null;
 	
 	//constructor to initialise order
 	public Order(String id, ArrayList<String> tasks) {
@@ -24,7 +28,7 @@ public class Order extends Agent {
 	public String getId() {
 		return this.id;
 	}
-	
+
 	public ArrayList<String> getTasks() {
 		return this.tasks;
 	}
@@ -35,8 +39,23 @@ public class Order extends Agent {
 		for (int i = 1; i <= this.tasks.size(); i++)
 			System.out.print(this.tasks.get(i - 1) + "; ");
 		System.out.println();
-
 		this.addBehaviour(new OrderSendsArrivalMessage(this, new ACLMessage(ACLMessage.CFP)));
+					}
+	
+	public String ComparingTimes(ArrayList<String> MachineId, HashMap<String,Long> FinishTimes){
+		Long min = Long.MAX_VALUE;
+		String id = MachineId.get(0);
+		for (int i=0; i<MachineId.size(); i++) { 
+			long FinishTime = FinishTimes.get(MachineId.get(i));
+			if (FinishTime < min) {
+				min = FinishTime;
+				id = MachineId.get(i);
+			}
+			System.out.println(FinishTime);
+		}
+	return id;
 	}
 
 }
+
+

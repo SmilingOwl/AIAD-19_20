@@ -12,7 +12,7 @@ import jade.lang.acl.MessageTemplate;
 
 public class Machine extends Agent {
 	String id;
-	String role;
+    String role;
 	long averageTime;
 	ArrayList<String> ordersTaken; //contains the initial time to perform each task that is already allocated
 	ArrayList<String> ordersPending;
@@ -35,17 +35,20 @@ public class Machine extends Agent {
 	public String getRole() {
 		return this.role;
 	}
+
 	
 	//class that starts when the agent is created
 	public void setup() {
 		System.out.println("I'm machine " + this.id + ". My role is " + this.role + " and my average time is " + this.averageTime + ".");
 		this.addBehaviour(new MachineResponderToOrder(this, MessageTemplate.MatchPerformative(ACLMessage.CFP)));
 		this.register();
+		
 	}
 	
 	// register on yellow pages TODO: test
 	public void register() {
 		ServiceDescription sd = new ServiceDescription();
+		
 		sd.setType(this.role);
 		sd.setName(getLocalName());
 
