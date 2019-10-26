@@ -3,6 +3,8 @@ import utils.Proposal;
 import behaviours.*;
 
 import jade.core.Agent;
+
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -14,16 +16,17 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 public class Machine extends Agent {
-	String id;
-    String role;
-	long averageTime;
-	ArrayList<String> ordersTaken; //contains the initial time to perform each task that is already allocated
-	ArrayList<String> ordersPending;
-	HashMap<String, Long> ordersDone;
-	long latestFinishTime;
+	private String id;
+	private String role;
+	private long averageTime;
+	private ArrayList<String> ordersTaken; //contains the initial time to perform each task that is already allocated
+	private ArrayList<String> ordersPending;
+	private HashMap<String, Long> ordersDone;
+	private long latestFinishTime;
 	private DFAgentDescription dfd;
+	private FileWriter fw;
 	
-	//constructor to initialise machine
+	//constructor
 	
 	public Machine(String id, String role, long averageTime) {
 		this.id = id;
@@ -34,19 +37,15 @@ public class Machine extends Agent {
 		this.ordersDone = new HashMap<String, Long>();
 		this.latestFinishTime = 0;
 	}
-	
-	public String getId() {
-		return this.id;
-	}
-	
-	public String getRole() {
-		return this.role;
-	}
-
-	
+		
 	//class that starts when the agent is created
 	public void setup() {
-		System.out.println("I'm machine " + this.id + ". My role is " + this.role + " and my average time is " + this.averageTime + ".");
+		try {
+			this.fw = new FileWriter("messages/" + this.getId() + ".txt", false);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		this.writeFW("Machine: " + this.id + "\n Role: " + this.role + "\n Average time: " + this.averageTime + "\n\n");
 		this.addBehaviour(new MachineResponderToOrder(this, MessageTemplate.MatchPerformative(ACLMessage.CFP)));
 		this.register();
 		
@@ -71,6 +70,18 @@ public class Machine extends Agent {
 		}
 	}
 	
+	public String getId() {
+		return this.id;
+	}
+	
+	public HashMap<String, Long> getOrdersDone() {
+		return this.ordersDone;
+	}
+	
+	public String getRole() {
+		return this.role;
+	}
+	
 	//for now, the machine accepts all orders
 	public boolean acceptOrder(String order_id) {
 		this.ordersPending.add(order_id);
@@ -93,6 +104,7 @@ public class Machine extends Agent {
 		this.ordersDone.put(id, finishTime);
 		this.ordersTaken.remove(this.ordersTaken.indexOf(id));
 		this.latestFinishTime = finishTime;
+		this.averageTime += (long)(noise / this.ordersDone.size());
 		return finishTime;
 	}
 	
@@ -102,6 +114,30 @@ public class Machine extends Agent {
 	
 	public void addOrdersTaken(String id) {
 		this.ordersTaken.add(id);
+	}
+	
+	public void writeFW(String content) {
+		try {
+			this.fw.write(content);
+			this.fw.flush();
+		} catch (Exception ex) {
+			try {
+				this.fw = new FileWriter("messages/" + this.getId() + ".txt", false);
+				this.writeFW(content);
+				this.fw.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void finish() {
+		this.writeFW("\n\nFinal Average Time: " + this.averageTime + "\n");
+		try {
+			this.fw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
 

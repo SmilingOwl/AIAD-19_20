@@ -16,8 +16,6 @@ import jade.proto.ContractNetInitiator;
 
 public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	Order parent;
-	// private static HashMap <String, ArrayList<String>> Results = null;
-	// private static HashMap <String, Long> Results2 = null;
 
 	public OrderSendsArrivalMessage(Order parent, ACLMessage cfp) {
 		super(parent, cfp);
@@ -44,17 +42,26 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 				for (int j = 0; j < result.length; j++) {
 					msg.addReceiver(result[j].getName());
 				}
+				if(result.length == 0) {
+					this.parent.writeFW("\n\nRESULT: No machines to complete task " + tasks.get(i) + "\n" + 
+							" Order not fulfilled.");
+					this.parent.setFinished(true);
+					break;
+				}
 
 			} catch (FIPAException fe) {
 				fe.printStackTrace();
 			}
 		}
-		vector.add(msg);
+		if(!this.parent.getFinished()) {
+			vector.add(msg);
+			this.parent.writeFW(">> Sent Message: " + content + "\n");
+		}
 		return vector;
 	}
 
 	protected void handleAllResponses(Vector responses, Vector acceptances) {
-		System.out.println(">> " + this.parent.getId() + " received " + responses.size() + " responses: ");
+		this.parent.writeFW("<< Received " + responses.size() + " responses: \n");
 
 		// tasks, ArrayList<ids>
 		HashMap<String, ArrayList<String>> tasksMachineIds = new HashMap<String, ArrayList<String>>();
@@ -71,7 +78,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		for (int i = 0; i < responses.size(); i++) {
 			ACLMessage msg = (ACLMessage) responses.elementAt(i);
 			String[] msgContent = msg.getContent().split(" ");
-			System.out.println(">> " + msg.getContent());
+			this.parent.writeFW("  << '" + msg.getContent() + "'\n");
 
 			tasksMachineIds.get(msgContent[2]).add(msgContent[1]);
 			idFinishTime.put(msgContent[1], Long.parseLong(msgContent[3]));
@@ -79,21 +86,29 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		}
 
 		ArrayList<String> acceptedMachines = new ArrayList<String>();
+		HashMap<String, String> machinesTasks = new HashMap<String, String>();
 
 		for (int n = 0; n < this.parent.getTasks().size(); n++) {
-			ArrayList<String> MachinesIds = tasksMachineIds.get(this.parent.getTasks().get(n));
-			if (MachinesIds.size() == 0) {
-				return;
+			ArrayList<String> machinesIds = tasksMachineIds.get(this.parent.getTasks().get(n));
+			if (machinesIds.size() == 0) {
+				this.parent.writeFW("\n\nRESULT: No machines to complete task " + this.parent.getTasks().get(n) + "\n" + 
+						" Order not fulfilled.");
+				this.parent.setFinished(true);
+				break;
 			}
-			acceptedMachines.add(this.parent.ComparingTimes(MachinesIds, idFinishTime));
+			String id = this.parent.comparingTimes(machinesIds, idFinishTime);
+			acceptedMachines.add(id);
+			machinesTasks.put(this.parent.getTasks().get(n), id);
+			this.parent.writeFW(">> Accepted proposal from: " + id + " for task: " + this.parent.getTasks().get(n) + "\n");
 		}
+		this.parent.setMachines(machinesTasks);
 
 		for (int i = 0; i < responses.size(); i++) {
 			ACLMessage msg = (ACLMessage) responses.elementAt(i);
 			String[] msgContent = msg.getContent().split(" ");
 			ACLMessage reply = msg.createReply();
 
-			if (acceptedMachines.contains(msgContent[1])) {
+			if (acceptedMachines.contains(msgContent[1]) && !this.parent.getFinished()) {
 				reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 				reply.setContent("ACCEPT " + this.parent.getId());
 			} else {
@@ -117,7 +132,9 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 
 		// obtain max value
 		long maxValueInHashMap = (Collections.max(idFinishTime.values()));
-		parent.SetFinishTime(maxValueInHashMap);
-		parent.SetFinished(true);
+		this.parent.setFinishTime(maxValueInHashMap);
+		this.parent.setMachinesFinishTime(idFinishTime);
+		this.parent.writeResult();
+		this.parent.setFinished(true);
 	}
 }
