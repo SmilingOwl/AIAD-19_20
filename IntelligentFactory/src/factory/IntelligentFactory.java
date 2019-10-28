@@ -171,7 +171,8 @@ public class IntelligentFactory {
 		System.out.println("\n\nResults:\n");
 		for(int i = 0; i < this.machines.size(); i++) {
 			this.machines.get(i).finish();
-			System.out.println(" - Machine: " + this.machines.get(i).getId() + " - Number of orders: " + this.machines.get(i).getOrdersDone().size());
+			System.out.println(" - Machine: " + this.machines.get(i).getId() + " - Number of orders: " + this.machines.get(i).getOrdersDone().size()
+					+ " - Lies: "+ this.machines.get(i).getNumberLies());
 		}
 		
 		//calculate average time per order

@@ -17,6 +17,7 @@ import jade.lang.acl.MessageTemplate;
 
 public class Machine extends Agent {
 	private String id;
+	private int numberLies=0;
 	private String role;
 	private long averageTime;
 	private double proactivity;
@@ -41,8 +42,8 @@ public class Machine extends Agent {
 		this.ordersDone = new HashMap<String, Long>();
 		this.latestFinishTime = 0;
 		// between [0,1]
-		this.proactivity = (rand.nextInt(101))/100;
-		this.liar = (rand.nextInt(101))/100;
+		this.proactivity = (rand.nextInt(101))/100.0;
+		this.liar = (rand.nextInt(101))/100.0;
 	}
 		
 	//class that starts when the agent is created
@@ -81,6 +82,10 @@ public class Machine extends Agent {
 		return this.id;
 	}
 	
+	public int getNumberLies() {
+		return this.numberLies;
+	}
+	
 	public HashMap<String, Long> getOrdersDone() {
 		return this.ordersDone;
 	}
@@ -97,10 +102,13 @@ public class Machine extends Agent {
 	
 	//we can improve this function by also taking into account the pending orders
 	public long getExpectedFinishTime() {
-		long expextedFinishTime = this.latestFinishTime + (this.ordersTaken.size()+1) * this.averageTime;
-		if(this.liar < 0.3) // liar
-			expextedFinishTime =  expextedFinishTime - ((long)(this.proactivity-0.5))*expextedFinishTime;
-		return expextedFinishTime;
+		long expectedFinishTime = this.latestFinishTime + (this.ordersTaken.size()+1) * this.averageTime;
+		
+		if(this.liar < 0.3) { // liar
+			expectedFinishTime =  expectedFinishTime - (long)((this.proactivity-0.5) * expectedFinishTime);
+			this.numberLies++;
+		}
+		return expectedFinishTime;
 			
 	}
 	
