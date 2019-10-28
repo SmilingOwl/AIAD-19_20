@@ -19,6 +19,7 @@ public class Machine extends Agent {
 	private String id;
 	private String role;
 	private long averageTime;
+	private double proactivity;
 	private ArrayList<String> ordersTaken; //contains the initial time to perform each task that is already allocated
 	private ArrayList<String> ordersPending;
 	private HashMap<String, Long> ordersDone;
@@ -29,6 +30,8 @@ public class Machine extends Agent {
 	//constructor
 	
 	public Machine(String id, String role, long averageTime) {
+		Random rand = new Random();
+		
 		this.id = id;
 		this.role = role;
 		this.averageTime = averageTime;
@@ -36,6 +39,7 @@ public class Machine extends Agent {
 		this.ordersPending = new ArrayList<String>();
 		this.ordersDone = new HashMap<String, Long>();
 		this.latestFinishTime = 0;
+		this.proactivity= (rand.nextInt(101))/100;
 	}
 		
 	//class that starts when the agent is created
