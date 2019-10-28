@@ -1,11 +1,12 @@
 package agents;
-import utils.Proposal;
-import behaviours.*;
+import behaviours.MachineResponderToOrder;
+import utils.TimeSlot;
 
 import jade.core.Agent;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -17,33 +18,34 @@ import jade.lang.acl.MessageTemplate;
 
 public class Machine extends Agent {
 	private String id;
-	private int numberLies=0;
+	private int numberLies;
 	private String role;
-	private long averageTime;
+	private int averageTime;
 	private double proactivity;
 	private double liar; //lies if liar < 0.3
-	private ArrayList<String> ordersTaken; //contains the initial time to perform each task that is already allocated
-	private ArrayList<String> ordersPending;
-	private HashMap<String, Long> ordersDone;
-	private long latestFinishTime;
+	private HashMap<String, TimeSlot> ordersTaken; //contains the initial time to perform each task that is already allocated
+	private ArrayList<TimeSlot> ordersDone;
+	private HashMap<String, TimeSlot> ordersPending;
 	private DFAgentDescription dfd;
 	private FileWriter fw;
+	private ArrayList<TimeSlot> allocatedTime;
 	
 	//constructor
 	
-	public Machine(String id, String role, long averageTime) {
+	public Machine(String id, String role, int averageTime) {
 		Random rand = new Random();
 		
 		this.id = id;
 		this.role = role;
 		this.averageTime = averageTime;
-		this.ordersTaken = new ArrayList<String>();
-		this.ordersPending = new ArrayList<String>();
-		this.ordersDone = new HashMap<String, Long>();
-		this.latestFinishTime = 0;
+		this.numberLies = 0;
+		this.ordersTaken = new HashMap<String, TimeSlot>();
+		this.ordersPending = new HashMap<String, TimeSlot>();
+		this.ordersDone = new ArrayList<TimeSlot>();
 		// between [0,1]
 		this.proactivity = (rand.nextInt(101))/100.0;
 		this.liar = (rand.nextInt(101))/100.0;
+		this.allocatedTime = new ArrayList<TimeSlot>();
 	}
 		
 	//class that starts when the agent is created
@@ -86,45 +88,57 @@ public class Machine extends Agent {
 		return this.numberLies;
 	}
 	
-	public HashMap<String, Long> getOrdersDone() {
-		return this.ordersDone;
-	}
-	
 	public String getRole() {
 		return this.role;
 	}
 	
-	//for now, the machine accepts all orders
-	public boolean acceptOrder(String order_id) {
-		this.ordersPending.add(order_id);
+	public double getLiarRatio() {
+		return this.liar;
+	}
+	
+	public double getProactivityRatio() {
+		return this.proactivity;
+	}
+	
+	public ArrayList<TimeSlot> getOrdersDone() {
+		return this.ordersDone;
+	}
+	
+	public boolean acceptOrder(String order_id, int[] time) {
+		TimeSlot t = new TimeSlot(order_id, time[0], time[1]);
+		this.ordersPending.put(order_id, t);
 		return true;
 	}
 	
-	//we can improve this function by also taking into account the pending orders
-	public long getExpectedFinishTime() {
-		long expectedFinishTime = this.latestFinishTime + (this.ordersTaken.size()+1) * this.averageTime;
-		
-		if(this.liar < 0.3) { // liar
-			expectedFinishTime =  expectedFinishTime - (long)((this.proactivity-0.5) * expectedFinishTime);
+	public int[] getExpectedFinishTime(int startTime) {
+		int expectedTimeToTake = this.averageTime;
+		Random r = new Random();
+		if(r.nextInt(101) / 100.0 > this.liar) { // liar
+			expectedTimeToTake =  expectedTimeToTake - (int)((this.proactivity-0.5) * expectedTimeToTake);
 			this.numberLies++;
 		}
-		return expectedFinishTime;
-			
-	}
-	
-	public long doOrder(String id) {
-		long finishTime = this.latestFinishTime;
-		if(!this.ordersTaken.contains(id)) {
-			return -1;
+		
+		int i = startTime;
+		int j = startTime + expectedTimeToTake;
+		int[] expectedTime = new int[2];
+		expectedTime[0] = i;
+		expectedTime[1] = j;
+		
+		for(int n = 0; n < allocatedTime.size(); n++) {
+			int value0 = allocatedTime.get(n).startTime;
+			int value1 = allocatedTime.get(n).finishTime;
+			if(i < value0 && j <= value0 || i >= value1 && j > value1) {
+				expectedTime[0] = i;
+				expectedTime[1] = j;
+			} else {
+				i = value1;
+				j = i + expectedTimeToTake;
+				n = -1;
+			}
 		}
-		Random random = new Random();
-		long noise = random.nextInt((int) averageTime) - averageTime / 2;
-		finishTime += averageTime + noise;
-		this.ordersDone.put(id, finishTime);
-		this.ordersTaken.remove(this.ordersTaken.indexOf(id));
-		this.latestFinishTime = finishTime;
-		this.averageTime += (long)(noise / this.ordersDone.size());
-		return finishTime;
+		
+		return expectedTime;
+			
 	}
 	
 	public void deleteFromPending(String id) {
@@ -132,7 +146,13 @@ public class Machine extends Agent {
 	}
 	
 	public void addOrdersTaken(String id) {
-		this.ordersTaken.add(id);
+		this.ordersTaken.put(id, this.ordersPending.get(id));
+		this.allocatedTime.add(this.ordersPending.get(id));
+		this.deleteFromPending(id);
+	}
+	
+	public HashMap<String, TimeSlot> getOrdersTaken() {
+		return this.ordersTaken;
 	}
 	
 	public void writeFW(String content) {
@@ -156,6 +176,24 @@ public class Machine extends Agent {
 			this.fw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void doOrders() {
+		Collections.sort(allocatedTime);
+		int next_start_time = 0;
+		for(int i = 0; i < allocatedTime.size(); i++) {
+			if(next_start_time < allocatedTime.get(i).startTime)
+				next_start_time = allocatedTime.get(i).startTime;
+			Random random = new Random();
+			int noise = 0;
+			if(random.nextInt(3) != 0) 
+				noise = random.nextInt(averageTime + 1) - averageTime / 2;
+			int finishTime = allocatedTime.get(i).startTime + noise;
+			this.ordersDone.add(new TimeSlot(allocatedTime.get(i).order, next_start_time, finishTime));
+			this.ordersTaken.remove(allocatedTime.get(i).order);
+			next_start_time = finishTime;
+			this.averageTime += (int)(noise / this.ordersDone.size());
 		}
 	}
 }

@@ -19,8 +19,14 @@ public class MachineResponderToOrder extends ContractNetResponder{
 		ACLMessage reply = msg.createReply();
 		reply.setPerformative(ACLMessage.PROPOSE);
 		
+		String[] msgContent = msg.getContent().split(" ");
+		int startTime = Integer.parseInt(msgContent[2]);
+		
+		int[] time = this.parent.getExpectedFinishTime(startTime);
+		
 		reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " "
-				+ this.parent.getExpectedFinishTime());
+				+ time[1]);
+		this.parent.acceptOrder(msgContent[1], time);
 		this.parent.send(reply);
 		this.parent.writeFW(">> Sent Message: " + reply.getContent() + "\n");
 		return reply;
@@ -35,13 +41,12 @@ public class MachineResponderToOrder extends ContractNetResponder{
 	protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
 		this.parent.writeFW("<< Received Message: " + accept.getContent() + "\n");	
 		String[] msgContent = accept.getContent().split(" ");
-		parent.deleteFromPending(msgContent[1]);
 		parent.addOrdersTaken(msgContent[1]);
 		
 		ACLMessage reply = accept.createReply();
 		reply.setPerformative(ACLMessage.INFORM);
 		
-		reply.setContent("DONE "+ this.parent.getId() + " " + this.parent.doOrder(msgContent[1]));
+		reply.setContent("ALLOCATED "+ this.parent.getId() + " " + this.parent.getOrdersTaken().get(msgContent[1]).finishTime);
 		this.parent.send(reply);
 		this.parent.writeFW(">> Sent Message: " + reply.getContent() + "\n");
 		return reply;

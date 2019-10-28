@@ -49,6 +49,8 @@ public class IntelligentFactory {
 		this.tasks.add("sewing");
 		this.tasks.add("mixing");
 		this.tasks.add("polishing");
+		this.tasks.add("painting");
+		this.tasks.add("gluing");
 		this.tasks.add("hammering");
 		
 		File message_dir = new File("messages");
@@ -170,15 +172,35 @@ public class IntelligentFactory {
 
 		System.out.println("\n\nResults:\n");
 		for(int i = 0; i < this.machines.size(); i++) {
+			this.machines.get(i).doOrders();
 			this.machines.get(i).finish();
 			System.out.println(" - Machine: " + this.machines.get(i).getId() + " - Number of orders: " + this.machines.get(i).getOrdersDone().size()
-					+ " - Lies: "+ this.machines.get(i).getNumberLies());
+					+ " - Number of lies: "+ this.machines.get(i).getNumberLies() + " - Honesty ratio: " + this.machines.get(i).getLiarRatio() + 
+					" - Proactivity ratio: " + this.machines.get(i).getProactivityRatio());
 		}
 		
-		//calculate average time per order
-		//final time (last finish time)
-		System.out.println("\n - Number of Unfulfilled Orders: " + unfulfilled_orders);
-		System.out.println("\nFor details relative to each order / machine, consult the respective txt file in folder messages");
+		double[] time = getFinalAverageTimePerOrder(unfulfilled_orders);
+		System.out.println("\n\nAllocation Report:\n");
+		System.out.println(" - Average Time Per Order: " + time[0]);
+		System.out.println(" - Last Finish Time: " + time[1]);
+		System.out.println(" - Number of Unfulfilled Orders: " + unfulfilled_orders);
+		System.out.println("\nFor details relative to each order / machine, consult the respective txt file in messages");
+	}
+	
+	private double[] getFinalAverageTimePerOrder(int unfulfilled) {
+		double[] time = new double[2];
+		time[0] = 0;
+		time[1] = 0;
+		for(int i = 0; i < this.orders.size(); i++) {
+			if(!this.orders.get(i).isUnfulfilled()) {
+				int f = this.orders.get(i).getFinishTime();
+				time[0] += f;
+				if(time[1] < f)
+					time[1] = f;
+			}
+		}
+		time[0] = time[0] / (this.orders.size()-unfulfilled);
+		return time;
 	}
 	
 	/*
