@@ -20,6 +20,7 @@ public class Machine extends Agent {
 	private String role;
 	private long averageTime;
 	private double proactivity;
+	private double liar; //lies if liar < 0.3
 	private ArrayList<String> ordersTaken; //contains the initial time to perform each task that is already allocated
 	private ArrayList<String> ordersPending;
 	private HashMap<String, Long> ordersDone;
@@ -39,7 +40,9 @@ public class Machine extends Agent {
 		this.ordersPending = new ArrayList<String>();
 		this.ordersDone = new HashMap<String, Long>();
 		this.latestFinishTime = 0;
-		this.proactivity= (rand.nextInt(101))/100;
+		// between [0,1]
+		this.proactivity = (rand.nextInt(101))/100;
+		this.liar = (rand.nextInt(101))/100;
 	}
 		
 	//class that starts when the agent is created
@@ -94,7 +97,11 @@ public class Machine extends Agent {
 	
 	//we can improve this function by also taking into account the pending orders
 	public long getExpectedFinishTime() {
-		return this.latestFinishTime + (this.ordersTaken.size()+1) * this.averageTime;
+		long expextedFinishTime = this.latestFinishTime + (this.ordersTaken.size()+1) * this.averageTime;
+		if(this.liar < 0.3) // liar
+			expextedFinishTime =  expextedFinishTime - ((long)(this.proactivity-0.5))*expextedFinishTime;
+		return expextedFinishTime;
+			
 	}
 	
 	public long doOrder(String id) {
