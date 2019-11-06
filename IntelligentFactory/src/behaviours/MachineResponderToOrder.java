@@ -6,7 +6,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.ContractNetResponder;
 
-public class MachineResponderToOrder extends ContractNetResponder{
+public class MachineResponderToOrder extends ContractNetResponder { //SSIteratedContractNetResponder
 	Machine parent;
 	
 	public MachineResponderToOrder(Machine parent, MessageTemplate mt) {

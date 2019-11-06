@@ -11,6 +11,8 @@ import jade.core.behaviours.SequentialBehaviour;
 import jade.lang.acl.ACLMessage;
 
 public class Order extends Agent {
+	//credits_to_spend
+	//credits_available
 	private String id;
 	private ArrayList<String> tasks;
 	private int finishTime;
@@ -20,7 +22,7 @@ public class Order extends Agent {
 	private FileWriter fw;
 
 	// constructor
-	public Order(String id, ArrayList<String> tasks) {
+	public Order(String id, ArrayList<String> tasks) { //receive credits
 		this.id = id;
 		this.tasks = tasks;
 		this.finished = false;
@@ -106,6 +108,15 @@ public class Order extends Agent {
 		}
 		return id;
 	}
+	
+	public boolean isSatisfied(int bestFinishTime, int secondBestFinishTime) {
+		if(bestFinishTime < secondBestFinishTime - bestFinishTime * 0.2)
+			return true;
+		return false;
+	}
+	
+	//TODO: function to take credits from credits_to_spend and from credits_available
+	//TODO: function to increase credits from one iteration to the other: credits += (available-to_spend)*(bestFinishTime - (secondBestFinishTime - bestFinishTime * 0.2))/bft
 	
 	public void writeResult() {
 		String report = "\n\nRESULT: Task Fulfilled after " + this.finishTime + " time unities.\n\n";

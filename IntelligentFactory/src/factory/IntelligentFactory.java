@@ -44,14 +44,14 @@ public class IntelligentFactory {
 		this.maxTimePerTask = maxTimePerTask;
 
 		this.tasks.add("snipping");
-		this.tasks.add("screwing");
-		this.tasks.add("sawing");
+		//this.tasks.add("screwing");
+		/*this.tasks.add("sawing");
 		this.tasks.add("sewing");
 		this.tasks.add("mixing");
 		this.tasks.add("polishing");
 		this.tasks.add("painting");
 		this.tasks.add("gluing");
-		this.tasks.add("hammering");
+		this.tasks.add("hammering");*/
 		
 		File message_dir = new File("messages");
         if(message_dir.exists()) {

@@ -17,10 +17,12 @@ import jade.proto.ContractNetInitiator;
 public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	Order parent;
 	String task;
+	int iterations;
 
 	public OrderSendsArrivalMessage(Order parent, ACLMessage cfp) {
 		super(parent, cfp);
 		this.parent = parent;
+		this.iterations = 0;
 	}
 
 	protected Vector<ACLMessage> prepareCfps(ACLMessage msg) {
@@ -87,6 +89,17 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 						+ " Order not fulfilled.");
 			this.parent.setFinished(true);
 		}
+		
+		//TODO: add logic to decide whether or not there will be a new iteration 
+		/*
+		For there to be a new iteration:
+		 - this.iterations < 3
+		 - more than one machine left
+		 - order is not satisfied
+		Order can reject machines which:  bestFinishTime < finishTime - bestFinishTime * 0.2
+		
+		Order sends messages with performative CFP for new proposals
+		*/
 		if(!this.parent.getFinished()) {
 			acceptedMachine = this.parent.comparingTimes(machineIds, idFinishTime);
 			this.parent.writeFW(">> Accepted proposal from: " + acceptedMachine + " for task: " + this.task + "\n");
