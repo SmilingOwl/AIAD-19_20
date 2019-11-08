@@ -249,8 +249,8 @@ public class IntelligentFactory {
 		System.out.println("5. Two tasks, 5 Machines, 3 Orders;");
 		System.out.println("6. Four tasks, 5 Machines, 3 Orders;");
 		System.out.println("7. Four tasks, 10 Machines, 30 Orders;");
-		System.out.println("8. Nine tasks, 10 Machines, 30 Orders;");
-		System.out.println("9. Nine tasks, 30 Machines, 100 Orders.");
+		System.out.println("8. Nine tasks, 10 Machines, 50 Orders;");
+		System.out.println("9. Nine tasks, 30 Machines, 200 Orders.");
 		System.out.print("\nTo run with custom arguments run in the command line: \njava IntelligentFactory <number of machines> ");
 		System.out.print("<number of orders> <minimum number of tasks per order> <maximum number of tasks per order>");
 		System.out.print("<minimum average time per machine> <maximum average time per machine> <minimum number of credits>");
@@ -316,7 +316,7 @@ public class IntelligentFactory {
 			tasks.add("painting");
 			tasks.add("gluing");
 			tasks.add("hammering");
-			new IntelligentFactory(10, 30, 2, 4, 20, 80, 200, 400, tasks);
+			new IntelligentFactory(10, 50, 2, 4, 20, 80, 200, 400, tasks);
 			break;
 		case 9:
 			tasks.add("screwing");
@@ -327,7 +327,7 @@ public class IntelligentFactory {
 			tasks.add("painting");
 			tasks.add("gluing");
 			tasks.add("hammering");
-			new IntelligentFactory(30, 100, 2, 8, 20, 100, 200, 400, tasks);
+			new IntelligentFactory(30, 200, 2, 8, 20, 100, 200, 400, tasks);
 			break;
 		}
 	}
