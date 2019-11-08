@@ -10,11 +10,13 @@ import jade.proto.SSIteratedContractNetResponder;
 public class MachineResponderToOrder extends SSIteratedContractNetResponder {
 	Machine parent;
 	double expected_credits;
+	int expectedTime;
 	int iter = 0;
 	
 	public MachineResponderToOrder(Machine parent, ACLMessage cfp) {
 		super(parent, cfp);
 		this.parent = parent;
+		this.expectedTime = this.parent.getAverageTime();
 	}
 
 	@Override
@@ -32,7 +34,8 @@ public class MachineResponderToOrder extends SSIteratedContractNetResponder {
 		ACLMessage reply = msg.createReply();
 		reply.setPerformative(ACLMessage.PROPOSE);
 		
-		int[] time = this.parent.getExpectedFinishTime(startTime, this.expected_credits, this.iter);
+		int[] time = this.parent.getExpectedFinishTime(startTime, this.expected_credits, this.expectedTime, this.iter);
+		this.expectedTime = time[2];
 		
 		reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " " + time[1]);
 		this.parent.acceptOrder(msgContent[1], time);

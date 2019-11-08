@@ -90,7 +90,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 				this.parent.addMachine(this.task, msgContent[1]);
 			} else if(new_iteration && acceptedMachines.contains(msgContent[1]) && !this.parent.getFinished()) {
 				reply.setPerformative(ACLMessage.CFP);
-				reply.setContent("ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits);
+				reply.setContent("ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits + " " + this.task);
 			} else {
 				reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 				reply.setContent("REJECT " + this.parent.getId());
@@ -107,7 +107,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	protected void handleAllResultNotifications(Vector resultNotifications) {
 		ACLMessage msg = (ACLMessage) resultNotifications.elementAt(0);
 		if(!this.parent.getFinished())
-			this.parent.writeFW("<< Received Message: " + msg.getContent());
+			this.parent.writeFW("<< Received Message: " + msg.getContent() + "\n");
 		else 
 			return;
 		String[] msgContent = msg.getContent().split(" ");

@@ -84,6 +84,10 @@ public class Machine extends Agent {
 		}
 	}
 	
+	public int getAverageTime() {
+		return averageTime;
+	}
+	
 	public String getId() {
 		return this.id;
 	}
@@ -118,14 +122,16 @@ public class Machine extends Agent {
 		return true;
 	}
 	
-	public int[] getExpectedFinishTime(int startTime, double order_credits, int iter) {
-		int expectedTimeToTake = this.averageTime;
-		Random r = new Random();
-		if(r.nextInt(101) / 100.0 > this.liar) {
-			expectedTimeToTake =  expectedTimeToTake - (int)((this.proactivity-0.5) * expectedTimeToTake);
-			this.numberLies++;
+	public int[] getExpectedFinishTime(int startTime, double order_credits, int expectedTimeToTake, int iter) {
+		int[] expectedTime = new int[3];
+		if(iter == 1) {
+			Random r = new Random();
+			if(r.nextInt(101) / 100.0 > this.liar) {
+				expectedTimeToTake =  expectedTimeToTake - (int)((this.proactivity-0.5) * expectedTimeToTake);
+				this.numberLies++;
+			}
 		}
-		if(iter > 1) {
+		else {
 			double perc = this.orderPerCreditsPercentage(order_credits);
 			if(perc >= 0) {
 				expectedTimeToTake -= perc * expectedTimeToTake;
@@ -133,15 +139,15 @@ public class Machine extends Agent {
 					expectedTimeToTake = this.averageTime / 2;
 				}
 			} else {
-				expectedTimeToTake -= 0.3 * perc * expectedTimeToTake;
+				expectedTimeToTake += 0.1 * perc * expectedTimeToTake;
 			} 
 		}
 		
 		int i = startTime;
 		int j = startTime + expectedTimeToTake;
-		int[] expectedTime = new int[2];
 		expectedTime[0] = i;
 		expectedTime[1] = j;
+		expectedTime[2] = expectedTimeToTake;
 		
 		for(int n = 0; n < allocatedTime.size(); n++) {
 			int value0 = allocatedTime.get(n).startTime;

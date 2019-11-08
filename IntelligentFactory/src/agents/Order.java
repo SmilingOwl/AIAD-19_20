@@ -138,7 +138,11 @@ public class Order extends Agent {
 	}
 	
 	public void writeResult() {
-		String report = "\n\nRESULT: Task Fulfilled after " + this.finishTime + " time unities.\n\n";
+		int finish = 0;
+		for(String machine_id : this.machinesFinishTime.keySet()) {
+			finish += this.machinesFinishTime.get(machine_id);
+		}
+		String report = "\n\nRESULT: Tasks fulfilled after " + finish + " time unities.\n\n";
 		for(int i = 0; i < this.tasks.size(); i++) {
 			String machine_id = this.machines.get(this.tasks.get(i));
 			report += " Task: " + this.tasks.get(i) + "\n";
@@ -173,7 +177,7 @@ public class Order extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 		if(this.getFinished())
 			return null;
-		String content = "ARRIVED " + this.getId() + " " + this.getFinishTime() + " " + this.getCreditsPerTask();
+		String content = "ARRIVED " + this.getId() + " " + this.getFinishTime() + " " + this.getCreditsPerTask() + " " + task;
 		msg.setContent(content);
 		msg.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
 
