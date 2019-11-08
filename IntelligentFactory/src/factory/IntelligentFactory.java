@@ -12,7 +12,6 @@ import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
 import jade.wrapper.ContainerController;
-import jade.wrapper.StaleProxyException;
 import jade.wrapper.AgentController;
 
 /*
@@ -260,9 +259,10 @@ public class IntelligentFactory {
 		int option = 0;
 		do {
 			try {
-				System.out.println("\nOption:");
 				Scanner sc = new Scanner(System.in);
+				System.out.println("\nOption:");
 				option = sc.nextInt();
+				sc.close();
 			} catch (Exception e) {
 				System.out.println("Invalid Input");
 				continue;

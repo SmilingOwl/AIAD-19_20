@@ -1,6 +1,5 @@
 package agents;
 import behaviours.MachineResponderDispatcher;
-import behaviours.MachineResponderToOrder;
 import utils.TimeSlot;
 
 import jade.core.Agent;
@@ -17,7 +16,6 @@ import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.*;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.proto.SSResponderDispatcher;
 
 public class Machine extends Agent {
 	private String id;

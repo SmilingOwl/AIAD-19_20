@@ -1,10 +1,7 @@
 package behaviours;
 
 import agents.Machine;
-import jade.core.behaviours.DataStore;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.proto.ContractNetResponder;
 import jade.proto.SSIteratedContractNetResponder;
 
 public class MachineResponderToOrder extends SSIteratedContractNetResponder {
