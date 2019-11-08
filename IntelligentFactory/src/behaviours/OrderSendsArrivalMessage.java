@@ -92,7 +92,6 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			} else if(new_iteration && acceptedMachines.contains(msgContent[1]) && !this.parent.getFinished()) {
 				reply.setPerformative(ACLMessage.CFP);
 				reply.setContent("ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits + " " + this.task);
-				this.parent.writeFW("reply to " + msgContent[1] + "\n");
 			} else {
 				reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 				reply.setContent("REJECT " + this.parent.getId());
