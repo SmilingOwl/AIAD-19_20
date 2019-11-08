@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
@@ -18,92 +19,63 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 	Order parent;
 	String task;
 	int iterations;
+	double credits;
 
-	public OrderSendsArrivalMessage(Order parent, ACLMessage cfp) {
+	public OrderSendsArrivalMessage(Order parent, ACLMessage cfp, String task) {
 		super(parent, cfp);
 		this.parent = parent;
 		this.iterations = 0;
-	}
-
-	protected Vector<ACLMessage> prepareCfps(ACLMessage msg) {
-		Vector<ACLMessage> vector = new Vector<ACLMessage>();
-		if(this.parent.getFinished())
-			return vector;
-		String content = "ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " ";
-		ArrayList<String> tasks = this.parent.getTasks();
-		for (int i = 0; i < tasks.size(); i++) {
-			content += tasks.get(i) + " ";
-		}
-		msg.setContent(content);
-
-		DFAgentDescription template = new DFAgentDescription();
-		ServiceDescription sd = new ServiceDescription();
-		this.task = tasks.get(this.parent.getMachines().size());
-		sd.setType(this.task);
-		template.addServices(sd);
-
-		try {
-			DFAgentDescription[] result = DFService.search(this.parent, template);
-			for (int j = 0; j < result.length; j++) {
-				msg.addReceiver(result[j].getName());
-			}
-			if (result.length == 0) {
-				this.parent.writeFW("\n\nRESULT: No machines to complete task "
-						+ this.task + ".\n" + " Order not fulfilled.");
-				this.parent.setFinished(true);
-			}
-
-		} catch (FIPAException fe) {
-			fe.printStackTrace();
-		}
-
-		if (!this.parent.getFinished()) {
-			vector.add(msg);
-			this.parent.writeFW(">> Sent Message: " + content + "\n");
-		}
-		return vector;
+		this.credits = this.parent.getCreditsPerTask();
+		this.task = task;
 	}
 
 	protected void handleAllResponses(Vector responses, Vector acceptances) {
+		if(this.parent.getFinished())
+			return;
 		this.parent.writeFW("<< Received " + responses.size() + " responses: \n");
-
+		
 		ArrayList<String> machineIds = new ArrayList<String>();
-
+	
 		// id -> finish time
 		HashMap<String, Integer> idFinishTime = new HashMap<String, Integer>();
-
+	
 		for (int i = 0; i < responses.size(); i++) {
 			ACLMessage msg = (ACLMessage) responses.elementAt(i);
 			String[] msgContent = msg.getContent().split(" ");
 			this.parent.writeFW("  << '" + msg.getContent() + "'\n");
-
+	
 			machineIds.add(msgContent[1]);
 			idFinishTime.put(msgContent[1], Integer.parseInt(msgContent[3]));
-
 		}
 
-		String acceptedMachine = "";
-
-		if (machineIds.size() == 0) {
+		if (machineIds.size() == 0 && !this.parent.getFinished()) {
 			this.parent.writeFW("\n\nRESULT: No machines to complete task " + this.task + "\n"
 						+ " Order not fulfilled.");
 			this.parent.setFinished(true);
+		} else if(this.parent.getFinished()) {
+			return;
 		}
 		
-		//TODO: add logic to decide whether or not there will be a new iteration 
-		/*
-		For there to be a new iteration:
-		 - this.iterations < 3
-		 - more than one machine left
-		 - order is not satisfied
-		Order can reject machines which:  bestFinishTime < finishTime - bestFinishTime * 0.2
-		
-		Order sends messages with performative CFP for new proposals
-		*/
+		boolean new_iteration = false;
+		ArrayList<String> acceptedMachines = new ArrayList<String>();
 		if(!this.parent.getFinished()) {
-			acceptedMachine = this.parent.comparingTimes(machineIds, idFinishTime);
-			this.parent.writeFW(">> Accepted proposal from: " + acceptedMachine + " for task: " + this.task + "\n");
-			this.parent.addMachine(this.task, acceptedMachine);
+			String best_id = this.parent.comparingTimes(machineIds, idFinishTime);
+			acceptedMachines.add(best_id);
+			if(this.iterations < 3 && machineIds.size() > 1) {
+				int bestFinishTime = idFinishTime.get(best_id);
+				machineIds.remove(best_id);
+				int secondBestFinishTime = idFinishTime.get(this.parent.comparingTimes(machineIds, idFinishTime));
+				if(!this.parent.isSatisfied(bestFinishTime, secondBestFinishTime)) {
+					new_iteration = true;
+					this.iterations++;
+					this.credits = this.parent.increase_credits_iteration(this.credits, bestFinishTime, secondBestFinishTime);
+					for(int n = 0; n < machineIds.size(); n++) {
+						if(bestFinishTime >= idFinishTime.get(machineIds.get(n)) - bestFinishTime * 0.2) {
+							acceptedMachines.add(machineIds.get(n));
+						}
+					}
+				}
+			}
 		}
 
 		for (int i = 0; i < responses.size(); i++) {
@@ -111,9 +83,14 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			String[] msgContent = msg.getContent().split(" ");
 			ACLMessage reply = msg.createReply();
 
-			if (acceptedMachine.equals(msgContent[1]) && !this.parent.getFinished()) {
+			if (!new_iteration && acceptedMachines.contains(msgContent[1]) && !this.parent.getFinished()) {
 				reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-				reply.setContent("ACCEPT " + this.parent.getId());
+				reply.setContent("ACCEPT " + this.parent.getId() + " " + this.credits);
+				this.parent.writeFW(">> Accepted proposal from: " + msgContent[1] + " for task: " + this.task + "\n");
+				this.parent.addMachine(this.task, msgContent[1]);
+			} else if(new_iteration && acceptedMachines.contains(msgContent[1]) && !this.parent.getFinished()) {
+				reply.setPerformative(ACLMessage.CFP);
+				reply.setContent("ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits);
 			} else {
 				reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 				reply.setContent("REJECT " + this.parent.getId());
@@ -121,11 +98,18 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 
 			acceptances.add(reply);
 		}
+		if(new_iteration && !this.parent.getFinished()) {
+			this.parent.writeFW(">> Sent Message: ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits + "\n");
+			newIteration(acceptances);
+		}
 	}
 
 	protected void handleAllResultNotifications(Vector resultNotifications) {
-		
 		ACLMessage msg = (ACLMessage) resultNotifications.elementAt(0);
+		if(!this.parent.getFinished())
+			this.parent.writeFW("<< Received Message: " + msg.getContent());
+		else 
+			return;
 		String[] msgContent = msg.getContent().split(" ");
 		int finishTime = Integer.parseInt(msgContent[2]);
 

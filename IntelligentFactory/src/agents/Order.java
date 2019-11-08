@@ -8,13 +8,18 @@ import java.util.HashMap;
 
 import jade.core.Agent;
 import jade.core.behaviours.SequentialBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPANames;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 
 public class Order extends Agent {
-	//credits_to_spend
-	//credits_available
 	private String id;
 	private ArrayList<String> tasks;
+	private double credits_per_task;
+	private double credits_available;
 	private int finishTime;
 	private boolean finished;
 	private HashMap<String, String> machines;
@@ -22,13 +27,15 @@ public class Order extends Agent {
 	private FileWriter fw;
 
 	// constructor
-	public Order(String id, ArrayList<String> tasks) { //receive credits
+	public Order(String id, ArrayList<String> tasks, double credits_per_task) {
 		this.id = id;
 		this.tasks = tasks;
 		this.finished = false;
 		this.finishTime = 0;
 		this.machines = new HashMap<String, String>();
 		this.machinesFinishTime = new HashMap<String, Integer>();
+		this.credits_per_task = credits_per_task;
+		this.credits_available = this.credits_per_task * this.tasks.size() * 0.2;
 	}
 
 	public String getId() {
@@ -68,6 +75,10 @@ public class Order extends Agent {
 	
 	public int getFinishTime() {
 		return this.finishTime;
+	}
+	
+	public double getCreditsPerTask() {
+		return this.credits_per_task;
 	}
 	
 	public void endTask() {
@@ -110,13 +121,21 @@ public class Order extends Agent {
 	}
 	
 	public boolean isSatisfied(int bestFinishTime, int secondBestFinishTime) {
-		if(bestFinishTime < secondBestFinishTime - bestFinishTime * 0.2)
+		if(bestFinishTime < secondBestFinishTime - bestFinishTime * 0.2 || this.credits_available <= 0)
 			return true;
 		return false;
 	}
 	
-	//TODO: function to take credits from credits_to_spend and from credits_available
-	//TODO: function to increase credits from one iteration to the other: credits += (available-to_spend)*(bestFinishTime - (secondBestFinishTime - bestFinishTime * 0.2))/bft
+	public double increase_credits_iteration(double credits, int bestFinishTime, int secondBestFinishTime) {
+		double c = this.credits_available * (bestFinishTime - (secondBestFinishTime - bestFinishTime * 0.2)) / bestFinishTime;
+		double new_credits = credits + c;
+		this.credits_available -= c;
+		if(this.credits_available < 0) {
+			new_credits += this.credits_available;
+			this.credits_available = 0;
+		}
+		return new_credits;
+	}
 	
 	public void writeResult() {
 		String report = "\n\nRESULT: Task Fulfilled after " + this.finishTime + " time unities.\n\n";
@@ -126,6 +145,7 @@ public class Order extends Agent {
 			report += "    Machine: " + machine_id + "\n";
 			report += "    Finish Time: " + this.machinesFinishTime.get(machine_id) + "\n\n";
 		}
+		report += " Remaining credits: " + this.credits_available;
 		this.writeFW(report);
 	}
 	
@@ -139,13 +159,49 @@ public class Order extends Agent {
 		String content = "New order: " + id + "\n Tasks: ";
 		for (int i = 1; i <= this.tasks.size(); i++)
 			content += this.tasks.get(i - 1) + "; ";
-		content += "\n\n";
+		content += "\n";
+		content += "Credits per task: " + this.credits_per_task + "\nExtra credits: " + this.credits_available + "\n\n";
 		this.writeFW(content);
 		SequentialBehaviour askMachines = new SequentialBehaviour();
 		for(int i = 0; i < this.tasks.size(); i++) {
-			askMachines.addSubBehaviour(new OrderSendsArrivalMessage(this, new ACLMessage(ACLMessage.CFP)));
+			askMachines.addSubBehaviour(new OrderSendsArrivalMessage(this, this.getInitialMessage(this.tasks.get(i)), this.tasks.get(i)));
 		}
 		this.addBehaviour(askMachines);
+	}
+	
+	public ACLMessage getInitialMessage(String task) {
+		ACLMessage msg = new ACLMessage(ACLMessage.CFP);
+		if(this.getFinished())
+			return null;
+		String content = "ARRIVED " + this.getId() + " " + this.getFinishTime() + " " + this.getCreditsPerTask();
+		msg.setContent(content);
+		msg.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
+
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType(task);
+		template.addServices(sd);
+
+		try {
+			DFAgentDescription[] result = DFService.search(this, template);
+			for (int j = 0; j < result.length; j++) {
+				msg.addReceiver(result[j].getName());
+			}
+			if (result.length == 0) {
+				this.writeFW("\n\nRESULT: No machines to complete task "
+						+ task + ".\n" + " Order not fulfilled.");
+				this.setFinished(true);
+			}
+
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+
+		if (!this.getFinished()) {
+			this.writeFW(">> Sent Message: " + content + "\n");
+			return msg;
+		}
+		return null;
 	}
 
 }

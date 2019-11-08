@@ -1,4 +1,5 @@
 package agents;
+import behaviours.MachineResponderDispatcher;
 import behaviours.MachineResponderToOrder;
 import utils.TimeSlot;
 
@@ -12,9 +13,11 @@ import java.util.Random;
 
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.*;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.proto.SSResponderDispatcher;
 
 public class Machine extends Agent {
 	private String id;
@@ -29,12 +32,11 @@ public class Machine extends Agent {
 	private DFAgentDescription dfd;
 	private FileWriter fw;
 	private ArrayList<TimeSlot> allocatedTime;
+	private double credits;
 	
 	//constructor
 	
-	public Machine(String id, String role, int averageTime) {
-		Random rand = new Random();
-		
+	public Machine(String id, String role, int averageTime, double proactivity, double honesty) {		
 		this.id = id;
 		this.role = role;
 		this.averageTime = averageTime;
@@ -42,10 +44,10 @@ public class Machine extends Agent {
 		this.ordersTaken = new HashMap<String, TimeSlot>();
 		this.ordersPending = new HashMap<String, TimeSlot>();
 		this.ordersDone = new ArrayList<TimeSlot>();
-		// between [0,1]
-		this.proactivity = (rand.nextInt(101))/100.0;
-		this.liar = (rand.nextInt(101))/100.0;
+		this.proactivity = proactivity;
+		this.liar = honesty;
 		this.allocatedTime = new ArrayList<TimeSlot>();
+		this.credits = 0;
 	}
 		
 	//class that starts when the agent is created
@@ -56,12 +58,14 @@ public class Machine extends Agent {
 			ex.printStackTrace();
 		}
 		this.writeFW("Machine: " + this.id + "\n Role: " + this.role + "\n Average time: " + this.averageTime + "\n\n");
-		this.addBehaviour(new MachineResponderToOrder(this, MessageTemplate.MatchPerformative(ACLMessage.CFP)));
+		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(
+				FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET),
+				MessageTemplate.MatchPerformative(ACLMessage.CFP));
+		this.addBehaviour(new MachineResponderDispatcher(this, template));//new MachineResponderToOrder(this, new ACLMessage(ACLMessage.CFP)));//MessageTemplate.MatchPerformative(ACLMessage.CFP)));
 		this.register();
 		
 	}
 	
-	// register on yellow pages TODO: test
 	public void register() {
 		ServiceDescription sd = new ServiceDescription();
 		
@@ -96,6 +100,10 @@ public class Machine extends Agent {
 		return this.liar;
 	}
 	
+	public double getCredits() {
+		return this.credits;
+	}
+	
 	public double getProactivityRatio() {
 		return this.proactivity;
 	}
@@ -110,12 +118,23 @@ public class Machine extends Agent {
 		return true;
 	}
 	
-	public int[] getExpectedFinishTime(int startTime) {
+	public int[] getExpectedFinishTime(int startTime, double order_credits, int iter) {
 		int expectedTimeToTake = this.averageTime;
 		Random r = new Random();
-		if(r.nextInt(101) / 100.0 > this.liar) { // liar
+		if(r.nextInt(101) / 100.0 > this.liar) {
 			expectedTimeToTake =  expectedTimeToTake - (int)((this.proactivity-0.5) * expectedTimeToTake);
 			this.numberLies++;
+		}
+		if(iter > 1) {
+			double perc = this.orderPerCreditsPercentage(order_credits);
+			if(perc >= 0) {
+				expectedTimeToTake -= perc * expectedTimeToTake;
+				if(expectedTimeToTake < this.averageTime / 2) {
+					expectedTimeToTake = this.averageTime / 2;
+				}
+			} else {
+				expectedTimeToTake -= 0.3 * perc * expectedTimeToTake;
+			} 
 		}
 		
 		int i = startTime;
@@ -145,7 +164,8 @@ public class Machine extends Agent {
 		this.ordersPending.remove(id);
 	}
 	
-	public void addOrdersTaken(String id) {
+	public void addOrdersTaken(String id, double credits) {
+		this.credits += credits;
 		this.ordersTaken.put(id, this.ordersPending.get(id));
 		this.allocatedTime.add(this.ordersPending.get(id));
 		this.deleteFromPending(id);
@@ -177,6 +197,17 @@ public class Machine extends Agent {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public double orderPerCreditsPercentage(double order_credits) {
+		double perc = 0.2;
+		if(ordersTaken.size() != 0)
+			perc *= (order_credits - (credits/ordersTaken.size())) / (credits/ordersTaken.size());
+		return perc;
+	}
+	
+	public void increase_credits(double order_credits) {
+		this.credits += order_credits;
 	}
 	
 	public void doOrders() {

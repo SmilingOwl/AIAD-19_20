@@ -1,47 +1,64 @@
 package behaviours;
 
 import agents.Machine;
-
+import jade.core.behaviours.DataStore;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.ContractNetResponder;
+import jade.proto.SSIteratedContractNetResponder;
 
-public class MachineResponderToOrder extends ContractNetResponder { //SSIteratedContractNetResponder
+public class MachineResponderToOrder extends SSIteratedContractNetResponder {
 	Machine parent;
+	double expected_credits;
+	int iter = 0;
 	
-	public MachineResponderToOrder(Machine parent, MessageTemplate mt) {
-		super(parent, mt);
+	public MachineResponderToOrder(Machine parent, ACLMessage cfp) {
+		super(parent, cfp);
 		this.parent = parent;
 	}
-	
+
+	@Override
 	protected ACLMessage handleCfp(ACLMessage msg) {
+		this.iter++;
 		this.parent.writeFW("<< Received Message: " + msg.getContent() + "\n");
+		
+		String[] msgContent = msg.getContent().split(" ");
+		
+		if(msgContent[0].equals("ARRIVED")) {
+		
+		int startTime = Integer.parseInt(msgContent[2]);
+		this.expected_credits = Double.parseDouble(msgContent[3]);
+		
 		ACLMessage reply = msg.createReply();
 		reply.setPerformative(ACLMessage.PROPOSE);
 		
-		String[] msgContent = msg.getContent().split(" ");
-		int startTime = Integer.parseInt(msgContent[2]);
+		int[] time = this.parent.getExpectedFinishTime(startTime, this.expected_credits, this.iter);
 		
-		int[] time = this.parent.getExpectedFinishTime(startTime);
-		
-		reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " "
-				+ time[1]);
+		reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " " + time[1]);
 		this.parent.acceptOrder(msgContent[1], time);
 		this.parent.send(reply);
 		this.parent.writeFW(">> Sent Message: " + reply.getContent() + "\n");
 		return reply;
+		} else if(msgContent[0].equals("ACCEPT")) {
+			return this.handleAcceptProposal(null, null, msg);
+		} else if(msgContent[0].equals("REJECT")) {
+			this.handleRejectProposal(null, null, msg);
+		}
+		return null;
 	}
-	
+
+	@Override
 	protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
 		String[] msgContent = reject.getContent().split(" ");
 		parent.deleteFromPending(msgContent[1]);
 		this.parent.writeFW("<< Received Message: " + reject.getContent() + "\n");	
 	}
-	
+
+	@Override
 	protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
 		this.parent.writeFW("<< Received Message: " + accept.getContent() + "\n");	
 		String[] msgContent = accept.getContent().split(" ");
-		parent.addOrdersTaken(msgContent[1]);
+		parent.addOrdersTaken(msgContent[1], Double.parseDouble(msgContent[2]));
 		
 		ACLMessage reply = accept.createReply();
 		reply.setPerformative(ACLMessage.INFORM);
