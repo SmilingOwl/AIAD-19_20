@@ -28,20 +28,19 @@ public class MachineResponderToOrder extends SSIteratedContractNetResponder {
 		
 		if(msgContent[0].equals("ARRIVED")) {
 		
-		int startTime = Integer.parseInt(msgContent[2]);
-		this.expected_credits = Double.parseDouble(msgContent[3]);
-		
-		ACLMessage reply = msg.createReply();
-		reply.setPerformative(ACLMessage.PROPOSE);
-		
-		int[] time = this.parent.getExpectedFinishTime(startTime, this.expected_credits, this.expectedTime, this.iter);
-		this.expectedTime = time[2];
-		
-		reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " " + time[1]);
-		this.parent.acceptOrder(msgContent[1], time);
-		this.parent.send(reply);
-		this.parent.writeFW(">> Sent Message: " + reply.getContent() + "\n");
-		return reply;
+			int startTime = Integer.parseInt(msgContent[2]);
+			this.expected_credits = Double.parseDouble(msgContent[3]);
+			
+			ACLMessage reply = msg.createReply();
+			reply.setPerformative(ACLMessage.PROPOSE);
+			
+			int[] time = this.parent.getExpectedFinishTime(startTime, this.expected_credits, this.expectedTime, this.iter);
+			this.expectedTime = time[2];
+			
+			reply.setContent("ACCEPT " + this.parent.getId() + " " + this.parent.getRole() + " " + time[1]);
+			this.parent.acceptOrder(msgContent[1], time);
+			this.parent.writeFW(">> Sent Message: " + reply.getContent() + "\n");
+			return reply;
 		} else if(msgContent[0].equals("ACCEPT")) {
 			return this.handleAcceptProposal(null, null, msg);
 		} else if(msgContent[0].equals("REJECT")) {

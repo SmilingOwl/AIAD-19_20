@@ -61,17 +61,18 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 		if(!this.parent.getFinished()) {
 			String best_id = this.parent.comparingTimes(machineIds, idFinishTime);
 			acceptedMachines.add(best_id);
-			if(this.iterations < 3 && machineIds.size() > 1) {
+			machineIds.remove(best_id);
+			if(this.iterations < 3 && machineIds.size() >= 1) {
 				int bestFinishTime = idFinishTime.get(best_id);
-				machineIds.remove(best_id);
 				int secondBestFinishTime = idFinishTime.get(this.parent.comparingTimes(machineIds, idFinishTime));
 				if(!this.parent.isSatisfied(bestFinishTime, secondBestFinishTime)) {
 					new_iteration = true;
 					this.iterations++;
 					this.credits = this.parent.increase_credits_iteration(this.credits, bestFinishTime, secondBestFinishTime);
 					for(int n = 0; n < machineIds.size(); n++) {
-						if(bestFinishTime >= idFinishTime.get(machineIds.get(n)) - bestFinishTime * 0.2) {
-							acceptedMachines.add(machineIds.get(n));
+						if(bestFinishTime >= idFinishTime.get(machineIds.get(n)) - bestFinishTime * 0.5) {
+							if(!acceptedMachines.contains(machineIds))
+								acceptedMachines.add(machineIds.get(n));
 						}
 					}
 				}
@@ -91,6 +92,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			} else if(new_iteration && acceptedMachines.contains(msgContent[1]) && !this.parent.getFinished()) {
 				reply.setPerformative(ACLMessage.CFP);
 				reply.setContent("ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits + " " + this.task);
+				this.parent.writeFW("reply to " + msgContent[1] + "\n");
 			} else {
 				reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 				reply.setContent("REJECT " + this.parent.getId());
