@@ -228,6 +228,10 @@ public class IntelligentFactory {
 			tasks.add("sawing");
 			tasks.add("sewing");
 			tasks.add("mixing");
+			tasks.add("polishing");
+			tasks.add("painting");
+			tasks.add("gluing");
+			tasks.add("hammering");
 			new IntelligentFactory(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 					Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]),
 					Integer.parseInt(args[5]), Integer.parseInt(args[6]), Integer.parseInt(args[7]), tasks);
