@@ -68,7 +68,6 @@ public class IntelligentFactory {
 
 		try {
 			createMachines();
-			Thread.sleep(500);
 			createOrders();
 
 		} catch (Exception e) {
