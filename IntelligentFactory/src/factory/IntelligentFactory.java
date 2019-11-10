@@ -242,8 +242,8 @@ public class IntelligentFactory {
 		System.out.println("This project is about a factory which has machines and orders. The objective is to allocate machines to fulfill each orders tasks.");
 		System.out.println("\nSelect an option to run the project:");
 		System.out.println("1. One task, 5 Machines, 3 Orders;");
-		System.out.println("2. One task, 5 Machines, 10 Orders;");
-		System.out.println("3. One task, 10 Machines, 30 Orders;");
+		System.out.println("2. One task, 10 Machines, 30 Orders;");
+		System.out.println("3. One task, 5 Machines, 100 Orders, same average time;");
 		System.out.println("4. One task, 5 Machines, 100 Orders;");
 		System.out.println("5. Two tasks, 5 Machines, 3 Orders;");
 		System.out.println("6. Two tasks, 10 Machines, 50 Orders;");
@@ -282,10 +282,10 @@ public class IntelligentFactory {
 			new IntelligentFactory(5, 3, 1, 1, 40, 60, 200, 400, tasks);
 			break;
 		case 2:
-			new IntelligentFactory(5, 10, 1, 1, 40, 60, 200, 400, tasks);
+			new IntelligentFactory(10, 30, 1, 1, 60, 80, 200, 400, tasks);
 			break;
 		case 3:
-			new IntelligentFactory(10, 30, 1, 1, 60, 80, 200, 400, tasks);
+			new IntelligentFactory(5, 100, 1, 1, 50, 50, 200, 400, tasks);
 			break;
 		case 4:
 			new IntelligentFactory(5, 100, 1, 1, 20, 100, 200, 400, tasks);
