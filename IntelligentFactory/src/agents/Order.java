@@ -70,7 +70,7 @@ public class Order extends Agent {
 	}
 
 	public void setFinishTime(int finishTime) {
-		this.finishTime = finishTime;
+		this.finishTime += finishTime;
 	}
 	
 	public int getFinishTime() {
@@ -84,6 +84,8 @@ public class Order extends Agent {
 	public void endTask() {
 		if(this.machines.size() == this.tasks.size())
 			this.setFinished(true);
+		else
+			this.addBehaviour(new OrderSendsArrivalMessage(this, this.getInitialMessage(this.tasks.get(this.machines.size())), this.tasks.get(this.machines.size())));
 	}
 
 	public void setFinished(boolean finished) {
@@ -166,11 +168,7 @@ public class Order extends Agent {
 		content += "\n";
 		content += "Credits per task: " + this.credits_per_task + "\nExtra credits: " + this.credits_available + "\n\n";
 		this.writeFW(content);
-		SequentialBehaviour askMachines = new SequentialBehaviour();
-		for(int i = 0; i < this.tasks.size(); i++) {
-			askMachines.addSubBehaviour(new OrderSendsArrivalMessage(this, this.getInitialMessage(this.tasks.get(i)), this.tasks.get(i)));
-		}
-		this.addBehaviour(askMachines);
+		this.addBehaviour(new OrderSendsArrivalMessage(this, this.getInitialMessage(this.tasks.get(0)), this.tasks.get(0)));
 	}
 	
 	public ACLMessage getInitialMessage(String task) {
