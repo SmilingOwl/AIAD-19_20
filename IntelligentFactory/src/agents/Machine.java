@@ -25,7 +25,6 @@ public class Machine extends Agent {
 	private double proactivity;
 	private double liar; //lies if liar < 0.3
 	private HashMap<String, TimeSlot> ordersTaken; //contains the initial time to perform each task that is already allocated
-	private ArrayList<TimeSlot> ordersDone;
 	private HashMap<String, TimeSlot> ordersPending;
 	private DFAgentDescription dfd;
 	private FileWriter fw;
@@ -41,7 +40,6 @@ public class Machine extends Agent {
 		this.numberLies = 0;
 		this.ordersTaken = new HashMap<String, TimeSlot>();
 		this.ordersPending = new HashMap<String, TimeSlot>();
-		this.ordersDone = new ArrayList<TimeSlot>();
 		this.proactivity = proactivity;
 		this.liar = honesty;
 		this.allocatedTime = new ArrayList<TimeSlot>();
@@ -108,10 +106,6 @@ public class Machine extends Agent {
 	
 	public double getProactivityRatio() {
 		return this.proactivity;
-	}
-	
-	public ArrayList<TimeSlot> getOrdersDone() {
-		return this.ordersDone;
 	}
 	
 	public boolean acceptOrder(String order_id, int[] time) {
@@ -195,7 +189,6 @@ public class Machine extends Agent {
 	}
 	
 	public void finish() {
-		this.writeFW("\n\nFinal Average Time: " + this.averageTime + "\n");
 		try {
 			this.fw.close();
 		} catch (Exception e) {
@@ -212,24 +205,6 @@ public class Machine extends Agent {
 	
 	public void increase_credits(double order_credits) {
 		this.credits += order_credits;
-	}
-	
-	public void doOrders() {
-		Collections.sort(allocatedTime);
-		int next_start_time = 0;
-		for(int i = 0; i < allocatedTime.size(); i++) {
-			if(next_start_time < allocatedTime.get(i).startTime)
-				next_start_time = allocatedTime.get(i).startTime;
-			Random random = new Random();
-			int noise = 0;
-			if(random.nextInt(3) != 0) 
-				noise = random.nextInt(averageTime + 1) - averageTime / 2;
-			int finishTime = allocatedTime.get(i).startTime + noise;
-			this.ordersDone.add(new TimeSlot(allocatedTime.get(i).order, next_start_time, finishTime));
-			this.ordersTaken.remove(allocatedTime.get(i).order);
-			next_start_time = finishTime;
-			this.averageTime += (int)(noise / this.ordersDone.size());
-		}
 	}
 }
 

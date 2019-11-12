@@ -181,10 +181,9 @@ public class IntelligentFactory {
 
 		System.out.println("\n\nResults:\n");
 		for (int i = 0; i < this.machines.size(); i++) {
-			this.machines.get(i).doOrders();
 			this.machines.get(i).finish();
 			System.out.println(" - Machine: " + this.machines.get(i).getId() + " - Number of orders: "
-					+ this.machines.get(i).getOrdersDone().size() + " - Number of lies: "
+					+ this.machines.get(i).getOrdersTaken().size() + " - Number of lies: "
 					+ this.machines.get(i).getNumberLies() + " - Honesty ratio: " + this.machines.get(i).getLiarRatio()
 					+ " - Proactivity ratio: " + this.machines.get(i).getProactivityRatio() + " - Credits received: "
 					+ String.format("%.2f", this.machines.get(i).getCredits()));
