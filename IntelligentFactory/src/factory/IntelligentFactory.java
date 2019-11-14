@@ -220,7 +220,7 @@ public class IntelligentFactory {
 	public static void main(String args[]) {
 		if(args.length == 0)
 			menu();
-		else {
+		else if(args.length == 8){
 			ArrayList<String> tasks = new ArrayList<String>();
 			tasks.add("snipping");
 			tasks.add("screwing");
@@ -234,6 +234,12 @@ public class IntelligentFactory {
 			new IntelligentFactory(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 					Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]),
 					Integer.parseInt(args[5]), Integer.parseInt(args[6]), Integer.parseInt(args[7]), tasks);
+		} else {
+			System.out.println("Usage:\nRun IntelligentFactory without arguments.");
+			System.out.print("Run IntelligentFactory with arguments: <number of machines> ");
+			System.out.print("<number of orders> <minimum number of tasks per order> <maximum number of tasks per order>");
+			System.out.print("<minimum average time per machine> <maximum average time per machine> <minimum number of credits>");
+			System.out.println("<maximum number of credits>");
 		}
 
 	}
