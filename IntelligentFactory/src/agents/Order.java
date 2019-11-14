@@ -1,6 +1,6 @@
 package agents;
 
-import behaviours.OrderSendsArrivalMessage;
+import behaviours.OrderInitiator;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class Order extends Agent {
 	}
 
 	public void setFinishTime(int finishTime) {
-		this.finishTime += finishTime;
+		this.finishTime = finishTime;
 	}
 	
 	public int getFinishTime() {
@@ -85,7 +85,7 @@ public class Order extends Agent {
 		if(this.machines.size() == this.tasks.size())
 			this.setFinished(true);
 		else
-			this.addBehaviour(new OrderSendsArrivalMessage(this, this.getInitialMessage(this.tasks.get(this.machines.size())), this.tasks.get(this.machines.size())));
+			this.addBehaviour(new OrderInitiator(this, this.getInitialMessage(this.tasks.get(this.machines.size())), this.tasks.get(this.machines.size())));
 	}
 
 	public void setFinished(boolean finished) {
@@ -140,11 +140,7 @@ public class Order extends Agent {
 	}
 	
 	public void writeResult() {
-		int finish = 0;
-		for(String machine_id : this.machinesFinishTime.keySet()) {
-			finish += this.machinesFinishTime.get(machine_id);
-		}
-		String report = "\n\nRESULT: Tasks fulfilled after " + finish + " time unities.\n\n";
+		String report = "\n\nRESULT: Tasks fulfilled after " + this.finishTime + " time unities.\n\n";
 		for(int i = 0; i < this.tasks.size(); i++) {
 			String machine_id = this.machines.get(this.tasks.get(i));
 			report += " Task: " + this.tasks.get(i) + "\n";
@@ -168,7 +164,7 @@ public class Order extends Agent {
 		content += "\n";
 		content += "Credits per task: " + this.credits_per_task + "\nExtra credits: " + this.credits_available + "\n\n";
 		this.writeFW(content);
-		this.addBehaviour(new OrderSendsArrivalMessage(this, this.getInitialMessage(this.tasks.get(0)), this.tasks.get(0)));
+		this.addBehaviour(new OrderInitiator(this, this.getInitialMessage(this.tasks.get(0)), this.tasks.get(0)));
 	}
 	
 	public ACLMessage getInitialMessage(String task) {

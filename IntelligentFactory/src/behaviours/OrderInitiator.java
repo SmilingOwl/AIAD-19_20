@@ -9,13 +9,13 @@ import java.util.HashMap;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 
-public class OrderSendsArrivalMessage extends ContractNetInitiator {
+public class OrderInitiator extends ContractNetInitiator {
 	Order parent;
 	String task;
 	int iterations;
 	double credits;
 
-	public OrderSendsArrivalMessage(Order parent, ACLMessage cfp, String task) {
+	public OrderInitiator(Order parent, ACLMessage cfp, String task) {
 		super(parent, cfp);
 		this.parent = parent;
 		this.iterations = 0;
@@ -94,7 +94,7 @@ public class OrderSendsArrivalMessage extends ContractNetInitiator {
 			acceptances.add(reply);
 		}
 		if(new_iteration && !this.parent.getFinished()) {
-			this.parent.writeFW(">> Sent Message: ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits + "\n");
+			this.parent.writeFW(">> Sent Message: ARRIVED " + this.parent.getId() + " " + this.parent.getFinishTime() + " " + this.credits + " " + this.task + "\n");
 			newIteration(acceptances);
 		}
 	}
