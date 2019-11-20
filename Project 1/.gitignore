@@ -1,0 +1,7 @@
+.metadata
+bin/
+.classpath
+.settings/
+messages/
+IntelligentFactory/APDescription.txt
+IntelligentFactory/MTPs-Main-Container.txt
