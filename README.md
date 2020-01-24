@@ -18,7 +18,9 @@ Each **order** has a certain number of credits which are awarded to the machines
 # Second Project - Intelligent Factory - Classification and Regression (Summary)
 
 The purpose of the second part of the project is to study the number of credits that the orders need to increase during the negotiation process so that the machines execute the task in a satisfying time, considering the independent variables that are accessible to the orders. Therefore we will answer the following questions:
-*If the order gives more credits to the machine, will it execute the task at the desired time?
-How does a machine’s execution time improve when the order increases the credits given during the negotiation process?*
+
+*If the order gives more credits to the machine, will it execute the task at the desired time?*
+
+*How does a machine’s execution time improve when the order increases the credits given during the negotiation process?*
 
 [For more details](https://github.com/SmilingOwl/AIAD-19_20/tree/master/Project%201/Docs/aiad-2.pptx)
